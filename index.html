@@ -29,7 +29,7 @@
   --feldrand:#A08476;
   --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
   --sans:"Avenir Next","Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
-  --leiste-h:4.5rem;
+  --leiste-h:4.9rem;
 }
 *,*::before,*::after{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -39,6 +39,7 @@ img,svg{max-width:100%}
 a{color:var(--rose-dunkel)}
 :focus-visible{outline:3px solid var(--text);outline-offset:3px}
 #inhalt:focus,#inhalt h1:focus{outline:none}
+#inhalt{overflow-wrap:break-word}
 .nur-vorlesen{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .skip{position:absolute;left:-999px;top:0;background:var(--text);color:#fff;padding:.6rem 1rem;z-index:100}
 .skip:focus{left:1rem;top:1rem}
@@ -46,7 +47,7 @@ a{color:var(--rose-dunkel)}
 /* Kopfbereich */
 .kopf{background:var(--karte);border-bottom:1px solid var(--linie)}
 .kopf-innen{max-width:70rem;margin:0 auto;padding:.9rem 1.25rem;display:flex;align-items:center}
-.marke{display:flex;align-items:center;gap:.75rem;text-decoration:none;color:var(--text);font:600 1.35rem/1.2 var(--serif)}
+.marke{display:flex;align-items:center;gap:.75rem;text-decoration:none;color:var(--text);font:600 1.35rem/1.2 var(--serif);overflow-wrap:anywhere}
 .marke img{max-height:3.5rem;width:auto;display:block}
 
 /* Schrittleiste */
@@ -93,8 +94,9 @@ h2{font:600 1.35rem/1.25 var(--serif);margin:2rem 0 .6rem}
 .foto{width:6.5rem;height:6.5rem;border-radius:10px;overflow:hidden;background:var(--butter-hell);display:grid;place-items:center}
 .foto img{width:100%;height:100%;object-fit:cover;display:block}
 .foto svg{width:62%;height:auto}
-.karte-name{display:block;font:600 1.15rem/1.3 var(--serif)}
-.karte-beschr{display:block;color:var(--leise);font-size:.98rem;margin-top:.2rem}
+.karte-text{min-width:0}
+.karte-name{display:block;font:600 1.15rem/1.3 var(--serif);overflow-wrap:anywhere;hyphens:auto}
+.karte-beschr{display:block;color:var(--leise);font-size:.98rem;margin-top:.2rem;overflow-wrap:anywhere;hyphens:auto}
 .karte-rechts{display:flex;flex-direction:column;align-items:flex-end;gap:.6rem}
 .karte-preis{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
 .haken{width:1.6rem;height:1.6rem;border:2px solid var(--rose);border-radius:6px;background:#fff;display:grid;place-items:center}
@@ -130,6 +132,7 @@ h2{font:600 1.35rem/1.25 var(--serif);margin:2rem 0 .6rem}
 .ergebnis .gross{font:600 2rem/1.15 var(--serif);font-variant-numeric:tabular-nums}
 .liste{list-style:none;margin:0 0 1.25rem;padding:0;max-width:40rem}
 .liste li{display:flex;justify-content:space-between;gap:1rem;padding:.45rem 0;border-bottom:1px solid var(--linie)}
+.liste li > span:first-child{min-width:0;overflow-wrap:anywhere}
 .liste .preis{font-variant-numeric:tabular-nums;white-space:nowrap}
 .kat-kopf{display:flex;justify-content:space-between;align-items:baseline;max-width:40rem;margin-top:1.25rem;font-weight:700}
 .kat-kopf a{font-weight:400}
@@ -160,11 +163,11 @@ details.mail{margin:.75rem 0;border:1px solid var(--linie);border-radius:10px;ba
 details.mail summary{cursor:pointer;font-weight:600}
 details.mail dl{margin:.6rem 0;display:grid;grid-template-columns:auto 1fr;gap:.2rem 1rem}
 details.mail dt{color:var(--leise)}
-details.mail dd{margin:0}
+details.mail dd{margin:0;min-width:0;overflow-wrap:anywhere}
 details.mail pre{white-space:pre-wrap;word-break:break-word;margin:.5rem 0 .25rem;font:.95rem/1.5 var(--sans)}
 
 /* Rechtstexte */
-.recht p{max-width:65ch;margin:.3rem 0 .85rem}
+.recht p{max-width:65ch;margin:.3rem 0 .85rem;overflow-wrap:anywhere}
 .musterhinweis{max-width:65ch;margin:0 0 1.5rem;padding:.9rem 1.1rem;background:#fff;border:2px dashed var(--salbei);border-radius:12px}
 
 /* Fuß und Hinweis */
@@ -181,10 +184,13 @@ details.mail pre{white-space:pre-wrap;word-break:break-word;margin:.5rem 0 .25re
   .fuss{padding-bottom:calc(var(--leiste-h) + 1.5rem)}
   body[data-ansicht="start"] .korb.leer{display:none}
   .korb{position:fixed;left:0;right:0;bottom:0;top:auto;max-height:none;overflow:visible;padding:0;border-width:1px 0 0;border-radius:18px 18px 0 0;z-index:40;box-shadow:0 -4px 16px rgba(59,42,48,.12)}
-  .korb-schalter{display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;min-height:var(--leiste-h);padding:.6rem 1.1rem;background:transparent;border:0;font:inherit;color:var(--text);cursor:pointer;text-align:left}
-  .ks-name{font:600 1.15rem var(--serif)}
+  .korb-schalter{display:flex;align-items:center;gap:.85rem;width:100%;min-height:var(--leiste-h);padding:.5rem 1.1rem;background:transparent;border:0;font:inherit;color:var(--text);cursor:pointer;text-align:left}
+  .ks-bild{flex:none;width:4.7rem;line-height:0;margin:-1.4rem 0 -.3rem}
+  .ks-bild .korb-svg{max-width:none;margin:0}
+  .ks-text{display:flex;flex-direction:column;flex:1;min-width:0}
+  .ks-name{font:600 1.15rem/1.25 var(--serif)}
   .ks-summe{font-weight:700;font-variant-numeric:tabular-nums}
-  .ks-aktion{color:var(--rose-dunkel);font-weight:600;text-decoration:underline}
+  .ks-aktion{flex:none;color:var(--rose-dunkel);font-weight:600;text-decoration:underline}
   .korb-detail{display:none;max-height:70vh;overflow:auto;padding:0 1.1rem 1.1rem}
   .korb.offen .korb-detail{display:block}
   .korb-svg{max-width:13rem}
@@ -238,8 +244,8 @@ const KONFIG = {
 
   /* ---------- FIRMA ---------- */
   firma: {
-    name: "Wittl e.K. - einfach gut einkaufen",
-    logo: "img/Wittl-Logo.png",                                   // PLATZHALTER_FIRMENLOGO, z. B. "bilder/logo.png"
+    name: "PLATZHALTER_FIRMENNAME",
+    logo: "",                                   // PLATZHALTER_FIRMENLOGO, z. B. "bilder/logo.png"
     logoAlt: "PLATZHALTER_FIRMENLOGO_ALTTEXT",  // Beschreibung des Logos für Screenreader
     strasse: "PLATZHALTER_STRASSE_HAUSNUMMER",
     plzOrt: "PLATZHALTER_PLZ_ORT",
@@ -280,7 +286,7 @@ const KONFIG = {
     { name: "Maxi",   bis: 100 }
   ],
   // false = Bestellung ist über der größten Größe nicht möglich; true = möglich (Größe "auf Anfrage")
-  ueberMaxiErlaubt: true,
+  ueberMaxiErlaubt: false,
 
   /* ---------- E-MAIL ---------- */
   mail: {
@@ -538,7 +544,8 @@ function platzhalterFoto(icon){
   return '<svg viewBox="-26 -70 52 76" aria-hidden="true" focusable="false">' + (ICONS[icon] || '') + '</svg>';
 }
 
-function korbSvg(){
+function korbSvg(sfx){
+  const mid = 'korbmuster-' + sfx;
   const n = K.length;
   let slots = '';
   K.forEach((k, ki) => {
@@ -549,12 +556,12 @@ function korbSvg(){
     });
   });
   return '<svg class="korb-svg" viewBox="0 0 240 212" aria-hidden="true" focusable="false">' +
-    '<defs><pattern id="korbmuster" width="16" height="18" patternUnits="userSpaceOnUse"><rect width="16" height="18" fill="#E5C39B"/><path d="M0 9H16" stroke="#CDA678" stroke-width="2"/><path d="M4 0V9M12 9V18" stroke="#CDA678" stroke-width="2"/></pattern></defs>' +
-    '<g class="korb-gruppe" id="korbGruppe">' +
+    '<defs><pattern id="' + mid + '" width="16"height="18" patternUnits="userSpaceOnUse"><rect width="16" height="18" fill="#E5C39B"/><path d="M0 9H16" stroke="#CDA678" stroke-width="2"/><path d="M4 0V9M12 9V18" stroke="#CDA678" stroke-width="2"/></pattern></defs>' +
+    '<g class="korb-gruppe">' +
       '<ellipse cx="120" cy="204" rx="88" ry="5" fill="#3B2A30" opacity=".08"/>' +
       '<path d="M50 106C50 24 190 24 190 106" fill="none" stroke="#CDA678" stroke-width="7" stroke-linecap="round"/>' +
       slots +
-      '<path d="M30 108H210L188 192Q186 200 178 200H62Q54 200 52 192Z" fill="url(#korbmuster)"/>' +
+      '<path d="M30 108H210L188 192Q186 200 178 200H62Q54 200 52 192Z" fill="url(#' + mid + ')"/>' +
       '<rect x="24" y="100" width="192" height="13" rx="6.5" fill="#CDA678"/>' +
       '<g transform="translate(120 113)"><path d="M0 0C-16 -14 -26 -6 -22 4C-18 12 -6 6 0 0Z" fill="#A94E60"/><path d="M0 0C16 -14 26 -6 22 4C18 12 6 6 0 0Z" fill="#A94E60"/><circle r="5" fill="#8F3F50"/><path d="M-3 4L-10 20M3 4L10 20" stroke="#A94E60" stroke-width="4" stroke-linecap="round"/></g>' +
     '</g></svg>';
@@ -599,8 +606,10 @@ function korbHinweis(b){
 function baueKorb(){
   const aside = $('#korb');
   const schalter = h('button', { type: 'button', class: 'korb-schalter', 'aria-expanded': 'false', 'aria-controls': 'korb-detail' },
-    h('span', { class: 'ks-name', id: 'ksName' }),
-    h('span', { class: 'ks-summe', id: 'ksSumme' }),
+    h('span', { class: 'ks-bild', 'aria-hidden': 'true', html: korbSvg('mini') }),
+    h('span', { class: 'ks-text' },
+      h('span', { class: 'ks-name', id: 'ksName' }),
+      h('span', { class: 'ks-summe', id: 'ksSumme' })),
     h('span', { class: 'ks-aktion', id: 'ksAktion' }, 'Korb ansehen'));
   schalter.addEventListener('click', () => {
     const auf = aside.classList.toggle('offen');
@@ -609,7 +618,7 @@ function baueKorb(){
   });
   const detail = h('div', { class: 'korb-detail', id: 'korb-detail' },
     h('h2', null, 'Ihr Geschenkkorb'),
-    h('div', { html: korbSvg() }),
+    h('div', { html: korbSvg('gross') }),
     h('p', { class: 'groesse' }, h('span', { class: 'gl' }, 'Größe'), h('strong', { id: 'kGroesse' })),
     h('p', { class: 'summe' }, h('span', { class: 'gl' }, 'Summe'), h('strong', { id: 'kSumme' })),
     h('p', { class: 'hinweis-klein', id: 'kHinweis' }),
@@ -625,7 +634,7 @@ function aktualisiereKorb(ansage){
     s.classList.toggle('an', b.proKat[+s.dataset.kat].length > +s.dataset.nr);
   });
   const anteil = b.gi < 0 ? 0 : Math.min(b.gi, G.length - 1) / Math.max(G.length - 1, 1);
-  $('#korbGruppe').style.setProperty('--s', (0.66 + 0.42 * anteil).toFixed(3));
+  document.querySelectorAll('.korb-gruppe').forEach(g => g.style.setProperty('--s', (0.66 + 0.42 * anteil).toFixed(3)));
 
   const name = groessenName(b.gi);
   $('#kGroesse').textContent = name;
