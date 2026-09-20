@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Geschenkkorb konfigurieren</title>
+<meta name="description" content="PLATZHALTER_SEITENBESCHREIBUNG: Stellen Sie sich Ihren Geschenkkorb individuell zusammen.">
+<!-- PLATZHALTER_FAVICON: hier z. B. <link rel="icon" href="bilder/favicon.png"> einfügen -->
+<style>
+/* =====================================================================
+   DESIGN
+   Farben und Schriften sind unten als Variablen hinterlegt und lassen
+   sich zentral anpassen. Es werden bewusst keine Schriften von externen
+   Servern geladen (Datenschutz).
+   ===================================================================== */
+:root{
+  --grund:#FCEFE6;          /* Seitenhintergrund, helles Pfirsich */
+  --karte:#FFF9F4;          /* Flächen, Karten */
+  --text:#3B2A30;           /* Fließtext, dunkles Aubergine-Braun */
+  --leise:#6E5A5F;          /* Nebentext */
+  --linie:#E8D2C5;          /* feine Rahmen */
+  --rose:#A94E60;           /* Hauptfarbe für Knöpfe und Auswahl */
+  --rose-dunkel:#8F3F50;
+  --butter:#F7E3A6;         /* Hervorhebung */
+  --butter-hell:#FBEFC9;
+  --salbei:#A9BFA0;         /* Nebenfarbe */
+  --salbei-hell:#E4ECDD;
+  --warn:#8C2F2F;
+  --feldrand:#A08476;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --sans:"Avenir Next","Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+  --leiste-h:4.5rem;
+}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--grund);color:var(--text);font-family:var(--sans);font-size:1.0625rem;line-height:1.55}
+img,svg{max-width:100%}
+a{color:var(--rose-dunkel)}
+:focus-visible{outline:3px solid var(--text);outline-offset:3px}
+#inhalt:focus,#inhalt h1:focus{outline:none}
+.nur-vorlesen{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.skip{position:absolute;left:-999px;top:0;background:var(--text);color:#fff;padding:.6rem 1rem;z-index:100}
+.skip:focus{left:1rem;top:1rem}
+
+/* Kopfbereich */
+.kopf{background:var(--karte);border-bottom:1px solid var(--linie)}
+.kopf-innen{max-width:70rem;margin:0 auto;padding:.9rem 1.25rem;display:flex;align-items:center}
+.marke{display:flex;align-items:center;gap:.75rem;text-decoration:none;color:var(--text);font:600 1.35rem/1.2 var(--serif)}
+.marke img{max-height:3.5rem;width:auto;display:block}
+
+/* Schrittleiste */
+.schritte{border-bottom:1px solid var(--linie)}
+.schritte ul{max-width:70rem;margin:0 auto;padding:.75rem 1.25rem .9rem;list-style:none;display:flex;gap:.5rem;overflow-x:auto}
+.schritte a{display:inline-flex;align-items:center;gap:.5rem;white-space:nowrap;padding:.5rem .95rem;border:2px solid var(--linie);border-radius:999px;background:var(--karte);color:var(--text);text-decoration:none;font-weight:600;font-size:.98rem}
+.schritte a:hover{border-color:var(--rose)}
+.schritte a[aria-current="step"]{background:var(--rose);border-color:var(--rose);color:#fff}
+.zahl{min-width:1.5rem;padding:0 .4rem;border-radius:999px;background:var(--butter);color:var(--text);font-size:.85rem;text-align:center}
+
+/* Seitenaufbau */
+.rahmen{max-width:70rem;margin:0 auto;padding:2rem 1.25rem 3rem;display:grid;grid-template-columns:minmax(0,1fr) 20rem;gap:2.75rem;align-items:start}
+body[data-ansicht="recht"] .rahmen,
+body[data-ansicht="danke"] .rahmen{grid-template-columns:minmax(0,46rem);justify-content:center}
+body[data-ansicht="recht"] .korb,
+body[data-ansicht="danke"] .korb{display:none}
+
+h1{font:600 clamp(1.9rem,4vw,2.7rem)/1.15 var(--serif);letter-spacing:-.01em;margin:0 0 .9rem}
+h2{font:600 1.35rem/1.25 var(--serif);margin:2rem 0 .6rem}
+.lead{max-width:60ch;margin:0 0 1rem;font-size:1.125rem}
+.leise{color:var(--leise)}
+
+/* Knöpfe */
+.knopf{display:inline-block;padding:.85rem 1.6rem;border-radius:999px;border:2px solid var(--rose);background:var(--rose);color:#fff;font:600 1.05rem var(--sans);text-align:center;text-decoration:none;cursor:pointer}
+.knopf:hover{background:var(--rose-dunkel);border-color:var(--rose-dunkel)}
+.knopf.sekundaer{background:transparent;color:var(--rose-dunkel)}
+.knopf.sekundaer:hover{background:var(--butter-hell)}
+.knopf:disabled{opacity:.5;cursor:not-allowed}
+
+/* Startseite */
+.ablauf{list-style:none;margin:1.75rem 0 2rem;padding:0;display:grid;gap:1rem;max-width:40rem;counter-reset:schritt}
+.ablauf li{display:grid;grid-template-columns:2.4rem 1fr;gap:.25rem 1rem;counter-increment:schritt}
+.ablauf li::before{content:counter(schritt);grid-row:1 / span 2;width:2.4rem;height:2.4rem;border-radius:50%;background:var(--butter);display:grid;place-items:center;font:600 1.15rem var(--serif)}
+.ablauf strong{font-weight:700}
+.ablauf span{color:var(--leise)}
+
+/* Produktkarten */
+.produkte{display:grid;gap:.85rem;margin:1.5rem 0 2rem}
+.karte{position:relative}
+.karte input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer;z-index:1}
+.karte-flaeche{display:grid;grid-template-columns:6.5rem minmax(0,1fr) auto;gap:1rem;align-items:center;padding:.85rem 1rem .85rem .85rem;background:var(--karte);border:2px solid var(--linie);border-radius:14px}
+.karte input:checked + .karte-flaeche{background:var(--butter-hell);border-color:var(--rose)}
+.karte input:focus-visible + .karte-flaeche{outline:3px solid var(--text);outline-offset:3px}
+.foto{width:6.5rem;height:6.5rem;border-radius:10px;overflow:hidden;background:var(--butter-hell);display:grid;place-items:center}
+.foto img{width:100%;height:100%;object-fit:cover;display:block}
+.foto svg{width:62%;height:auto}
+.karte-name{display:block;font:600 1.15rem/1.3 var(--serif)}
+.karte-beschr{display:block;color:var(--leise);font-size:.98rem;margin-top:.2rem}
+.karte-rechts{display:flex;flex-direction:column;align-items:flex-end;gap:.6rem}
+.karte-preis{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.haken{width:1.6rem;height:1.6rem;border:2px solid var(--rose);border-radius:6px;background:#fff;display:grid;place-items:center}
+.haken::after{content:"";width:.38rem;height:.75rem;border:solid #fff;border-width:0 3px 3px 0;transform:translate(0,-1px) rotate(45deg);opacity:0}
+.karte input:checked + .karte-flaeche .haken{background:var(--rose)}
+.karte input:checked + .karte-flaeche .haken::after{opacity:1}
+.blaettern{display:flex;flex-wrap:wrap;gap:.75rem;justify-content:space-between;margin-top:1rem}
+
+/* Korb (Seitenleiste) */
+.korb{position:sticky;top:1rem;max-height:calc(100vh - 2rem);overflow:auto;background:var(--karte);border:1px solid var(--linie);border-radius:18px;padding:1.1rem 1.1rem 1.25rem}
+.korb h2{margin:0 0 .25rem;font-size:1.15rem}
+.korb-svg{display:block;width:100%;height:auto;max-width:17rem;margin:0 auto}
+.korb-gruppe{transform:scale(var(--s,.66));transform-origin:120px 204px;transition:transform .55s cubic-bezier(.3,1.3,.5,1)}
+.pop{opacity:0;transform:translateY(16px);transition:opacity .3s,transform .45s cubic-bezier(.3,1.4,.5,1)}
+.slot.an .pop{opacity:1;transform:none}
+.korb p{margin:.25rem 0}
+.gl{display:block;font-size:.9rem;color:var(--leise)}
+.groesse strong{font:600 1.7rem/1.2 var(--serif)}
+.summe strong{font:700 1.25rem var(--sans);font-variant-numeric:tabular-nums}
+.hinweis-klein{font-size:.95rem;color:var(--leise);margin-top:.6rem!important}
+.leiter{list-style:none;margin:.9rem 0 1rem;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem}
+.leiter li{border:1px solid var(--linie);border-radius:8px;padding:.3rem .25rem;text-align:center;font-size:.85rem;line-height:1.25;background:#fff}
+.leiter strong{display:block;font-size:.95rem}
+.leiter span{color:var(--leise)}
+.leiter li.erreicht{background:var(--salbei-hell);border-color:var(--salbei)}
+.leiter li.aktuell{background:var(--butter);border-color:var(--text);border-width:2px}
+.korb .knopf{display:block;width:100%}
+.korb-schalter{display:none}
+
+/* Zusammenfassung */
+.ergebnis{display:flex;flex-wrap:wrap;gap:.5rem 3rem;padding:1.1rem 1.4rem;margin:1.25rem 0 1.5rem;background:var(--karte);border:2px solid var(--butter);border-radius:14px}
+.ergebnis .gl{margin-bottom:.1rem}
+.ergebnis .gross{font:600 2rem/1.15 var(--serif);font-variant-numeric:tabular-nums}
+.liste{list-style:none;margin:0 0 1.25rem;padding:0;max-width:40rem}
+.liste li{display:flex;justify-content:space-between;gap:1rem;padding:.45rem 0;border-bottom:1px solid var(--linie)}
+.liste .preis{font-variant-numeric:tabular-nums;white-space:nowrap}
+.kat-kopf{display:flex;justify-content:space-between;align-items:baseline;max-width:40rem;margin-top:1.25rem;font-weight:700}
+.kat-kopf a{font-weight:400}
+
+/* Formular */
+.formular{max-width:40rem}
+.feld{margin-bottom:1.15rem}
+.feld > label{display:block;font-weight:600;margin-bottom:.3rem}
+.opt{font-weight:400;color:var(--leise)}
+.feld input[type="text"],.feld input[type="email"],.feld input[type="tel"],.feld textarea{width:100%;padding:.7rem .8rem;font:inherit;color:var(--text);background:#fff;border:2px solid var(--feldrand);border-radius:10px}
+.feld textarea{resize:vertical;min-height:7rem}
+.feld [aria-invalid="true"]{border-color:var(--warn)}
+.feld-hinweis{margin:.3rem 0 0;font-size:.95rem;color:var(--leise)}
+.fehler{margin:.35rem 0 0;color:var(--warn);font-weight:600}
+.zaehler{margin:.25rem 0 0;font-size:.9rem;color:var(--leise);text-align:right}
+.check label{display:grid;grid-template-columns:1.5rem 1fr;gap:.75rem;align-items:start;cursor:pointer}
+.check input{width:1.4rem;height:1.4rem;margin:.15rem 0 0;accent-color:var(--rose)}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.hinweisbox{margin:1.5rem 0;padding:1rem 1.2rem;background:var(--butter-hell);border:2px solid var(--butter);border-radius:12px}
+.hinweisbox p{margin:.35rem 0}
+.hinweisbox strong{font-weight:700}
+.warnbox{margin:1rem 0;padding:.9rem 1.1rem;border:2px solid var(--warn);border-radius:12px;background:#fff;color:var(--warn);font-weight:600}
+.testbox{margin:1.5rem 0;padding:1rem 1.2rem;border:2px dashed var(--salbei);border-radius:12px;background:#fff}
+.testbox p{margin:.3rem 0}
+
+/* Danke-Seite und Mailvorschau */
+details.mail{margin:.75rem 0;border:1px solid var(--linie);border-radius:10px;background:#fff;padding:.6rem 1rem}
+details.mail summary{cursor:pointer;font-weight:600}
+details.mail dl{margin:.6rem 0;display:grid;grid-template-columns:auto 1fr;gap:.2rem 1rem}
+details.mail dt{color:var(--leise)}
+details.mail dd{margin:0}
+details.mail pre{white-space:pre-wrap;word-break:break-word;margin:.5rem 0 .25rem;font:.95rem/1.5 var(--sans)}
+
+/* Rechtstexte */
+.recht p{max-width:65ch;margin:.3rem 0 .85rem}
+.musterhinweis{max-width:65ch;margin:0 0 1.5rem;padding:.9rem 1.1rem;background:#fff;border:2px dashed var(--salbei);border-radius:12px}
+
+/* Fuß und Hinweis */
+.fuss{border-top:1px solid var(--linie);padding:1.5rem 1.25rem;text-align:center;color:var(--leise);font-size:.95rem}
+.fuss nav{display:flex;flex-wrap:wrap;gap:.4rem 1.5rem;justify-content:center;margin-bottom:.6rem}
+#cookie-hinweis{position:fixed;left:1rem;bottom:1rem;max-width:27rem;z-index:60;background:var(--karte);border:2px solid var(--text);border-radius:14px;padding:1rem 1.1rem}
+#cookie-hinweis p{margin:0 0 .75rem;font-size:.98rem}
+#cookie-hinweis .aktionen{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center}
+#cookie-hinweis .knopf{padding:.55rem 1.2rem;font-size:1rem}
+
+/* Handy und schmale Fenster */
+@media (max-width:56rem){
+  .rahmen{grid-template-columns:minmax(0,1fr);padding-top:1.5rem;padding-bottom:calc(var(--leiste-h) + 2rem)}
+  .fuss{padding-bottom:calc(var(--leiste-h) + 1.5rem)}
+  body[data-ansicht="start"] .korb.leer{display:none}
+  .korb{position:fixed;left:0;right:0;bottom:0;top:auto;max-height:none;overflow:visible;padding:0;border-width:1px 0 0;border-radius:18px 18px 0 0;z-index:40;box-shadow:0 -4px 16px rgba(59,42,48,.12)}
+  .korb-schalter{display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;min-height:var(--leiste-h);padding:.6rem 1.1rem;background:transparent;border:0;font:inherit;color:var(--text);cursor:pointer;text-align:left}
+  .ks-name{font:600 1.15rem var(--serif)}
+  .ks-summe{font-weight:700;font-variant-numeric:tabular-nums}
+  .ks-aktion{color:var(--rose-dunkel);font-weight:600;text-decoration:underline}
+  .korb-detail{display:none;max-height:70vh;overflow:auto;padding:0 1.1rem 1.1rem}
+  .korb.offen .korb-detail{display:block}
+  .korb-svg{max-width:13rem}
+  .karte-flaeche{grid-template-columns:5rem minmax(0,1fr);gap:.75rem}
+  .foto{width:5rem;height:5rem}
+  .karte-rechts{grid-column:1 / -1;flex-direction:row;justify-content:space-between;align-items:center}
+  #cookie-hinweis{left:.6rem;right:.6rem;max-width:none;bottom:.6rem}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition:none!important;animation:none!important}
+}
+</style>
+</head>
+<body data-ansicht="start">
+<noscript><p style="padding:1rem">Bitte aktivieren Sie JavaScript, um den Geschenkkorb zu konfigurieren.</p></noscript>
+<a class="skip" href="#inhalt">Zum Inhalt springen</a>
+
+<header class="kopf"><div class="kopf-innen" id="kopf"></div></header>
+<nav class="schritte" id="schritte" aria-label="Kategorien" hidden><ul></ul></nav>
+
+<div class="rahmen">
+  <main id="inhalt" tabindex="-1"></main>
+  <aside class="korb leer" id="korb" aria-label="Ihr Geschenkkorb"></aside>
+</div>
+
+<footer class="fuss" id="fuss"></footer>
+
+<div id="cookie-hinweis" role="region" aria-label="Hinweis zu Cookies und Datenschutz" hidden>
+  <p id="cookie-text"></p>
+  <div class="aktionen">
+    <button type="button" class="knopf" id="cookie-ok">Verstanden</button>
+    <a href="#datenschutz">Zur Datenschutzerklärung</a>
+  </div>
+</div>
+<div class="nur-vorlesen" id="ansage" aria-live="polite"></div>
+
+
+<!-- =====================================================================
+     KONFIGURATION: HIER WIRD ALLES ANGEPASST
+     Alle Stellen, die Sie noch ausfüllen müssen, enthalten das Wort
+     PLATZHALTER. Mit der Suchfunktion Ihres Editors (Strg+F bzw. Cmd+F)
+     nach "PLATZHALTER" finden Sie sie alle.
+
+     BILDER: Legen Sie Fotos und Logos in einen Ordner "bilder" neben
+     diese Datei und tragen Sie den Pfad ein, z. B. "bilder/wein-1.jpg".
+     Ist ein Pfad leer (""), wird stattdessen ein Platzhalterbild bzw.
+     der Firmenname gezeigt.
+     ===================================================================== -->
+<script>
+const KONFIG = {
+
+  /* ---------- FIRMA ---------- */
+  firma: {
+    name: "PLATZHALTER_FIRMENNAME",
+    logo: "",                                   // PLATZHALTER_FIRMENLOGO, z. B. "bilder/logo.png"
+    logoAlt: "PLATZHALTER_FIRMENLOGO_ALTTEXT",  // Beschreibung des Logos für Screenreader
+    strasse: "PLATZHALTER_STRASSE_HAUSNUMMER",
+    plzOrt: "PLATZHALTER_PLZ_ORT",
+    telefon: "PLATZHALTER_TELEFON",
+    email: "PLATZHALTER_KONTAKT_EMAIL",
+    oeffnungszeiten: "PLATZHALTER_OEFFNUNGSZEITEN"
+  },
+
+  /* ---------- TEXTE ---------- */
+  texte: {
+    seitentitel: "Geschenkkorb konfigurieren",   // PLATZHALTER_SEITENTITEL
+    startTitel: "Ihr Geschenkkorb, ganz nach Ihrem Geschmack",   // PLATZHALTER_STARTTITEL
+    startText: [                                                  // PLATZHALTER_STARTTEXT
+      "Stellen Sie sich in wenigen Schritten einen Geschenkkorb zusammen, der genau zu der Person passt, die Sie beschenken möchten.",
+      "Wählen Sie aus unseren Kategorien die Produkte aus, die in den Korb sollen. Der Korb wächst mit Ihrer Auswahl, und Sie sehen jederzeit, welche Größe und welchen Preis er hat."
+    ],
+    startSchritte: [                                              // PLATZHALTER_STARTSCHRITTE
+      { titel: "Produkte auswählen", text: "Gehen Sie die Kategorien durch und kreuzen Sie an, was in den Korb soll. Sie können jederzeit zwischen den Kategorien wechseln." },
+      { titel: "Größe und Preis sehen", text: "Der Korb zeigt laufend seine Größe, von Mini bis Maxi, und die Summe der Einzelpreise." },
+      { titel: "Absenden und abholen", text: "Wir richten den Korb für Sie her. In der Regel steht er am nächsten Werktag zur Abholung bereit." }
+    ],
+    startButton: "Geschenkkorb konfigurieren - los geht's!",
+    // Hinweistexte im letzten Schritt
+    abholHinweis: "Mit dem Absenden wird Ihr Geschenkkorb von unseren Mitarbeiterinnen hergerichtet. In der Regel steht er am nächsten Werktag zur Abholung bereit. Zusätzlich erhalten Sie eine Bestätigung per E-Mail.",   // PLATZHALTER_ABHOLHINWEIS
+    alkoholHinweis: "Alkoholische Getränke werden nur nach den Vorgaben des Jugendschutzgesetzes abgegeben (Spirituosen ab 18 Jahren).",   // PLATZHALTER_ALKOHOLHINWEIS
+    zahlungsHinweis: "PLATZHALTER_ZAHLUNGSHINWEIS: z. B. Bezahlung bei Abholung im Geschäft.",
+    preisHinweis: "Alle Preise in Euro, inklusive gesetzlicher Umsatzsteuer.",   // PLATZHALTER_PREISHINWEIS
+    cookieText: "Diese Seite setzt keine Cookies zu Analyse- oder Werbezwecken. Gespeichert wird höchstens, dass Sie diesen Hinweis gesehen haben. Details finden Sie in der Datenschutzerklärung."   // PLATZHALTER_COOKIETEXT
+  },
+
+  /* ---------- GRÖSSEN (aufsteigend; "bis" = Obergrenze in Euro, einschließlich) ---------- */
+  groessen: [
+    { name: "Mini",   bis: 10 },
+    { name: "Klein",  bis: 20 },
+    { name: "Mittel", bis: 30 },
+    { name: "Groß",   bis: 50 },
+    { name: "XL",     bis: 75 },
+    { name: "Maxi",   bis: 100 }
+  ],
+  // false = Bestellung ist über der größten Größe nicht möglich; true = möglich (Größe "auf Anfrage")
+  ueberMaxiErlaubt: false,
+
+  /* ---------- E-MAIL ---------- */
+  mail: {
+    // Adresse, an die die Bestellung gesendet wird (Testmodus, solange "endpunkt" leer ist).
+    endpunkt: "",                               // PLATZHALTER_MAIL_ENDPUNKT: URL des Mail-Skripts/-Dienstes. Leer = Testmodus ohne Versand
+    mitarbeiterAdresse: "PLATZHALTER_MITARBEITER_EMAIL",
+    absenderName: "PLATZHALTER_FIRMENNAME"
+  },
+
+  /* ---------- PRODUKTE ----------
+     Jede Kategorie enthält eine Liste "produkte". Weitere Produkte einfach
+     als neuen Block { ... } ergänzen; "id" muss eindeutig sein.
+     preis = Rohpreis in Euro (Punkt als Dezimaltrennzeichen).
+     foto  = Pfad zum Bild, z. B. "bilder/wein-1.jpg" (leer = Platzhalterbild). */
+  kategorien: [
+    {
+      name: "Wein und Spirituosen", kurz: "Wein", icon: "wein", alkohol: true,
+      intro: "Ein guter Tropfen bildet oft den Mittelpunkt eines Geschenkkorbs.",   // PLATZHALTER_KATEGORIE_WEIN_TEXT
+      produkte: [
+        { id: "wein-1", name: "PLATZHALTER_WEIN_1_NAME", beschreibung: "PLATZHALTER_WEIN_1_BESCHREIBUNG: z. B. Herkunft, Füllmenge, Geschmack.",
+          preis: 12.90,   // PLATZHALTER_WEIN_1_PREIS
+          foto: "" },     // PLATZHALTER_WEIN_1_FOTO
+        { id: "wein-2", name: "PLATZHALTER_WEIN_2_NAME", beschreibung: "PLATZHALTER_WEIN_2_BESCHREIBUNG: z. B. Herkunft, Füllmenge, Geschmack.",
+          preis: 8.50,    // PLATZHALTER_WEIN_2_PREIS
+          foto: "" },     // PLATZHALTER_WEIN_2_FOTO
+        { id: "wein-3", name: "PLATZHALTER_WEIN_3_NAME", beschreibung: "PLATZHALTER_WEIN_3_BESCHREIBUNG: z. B. Spirituose, Herkunft, Füllmenge.",
+          preis: 18.00,   // PLATZHALTER_WEIN_3_PREIS
+          foto: "" }      // PLATZHALTER_WEIN_3_FOTO
+      ]
+    },
+    {
+      name: "Essig und Öl", kurz: "Essig & Öl", icon: "essig",
+      intro: "Feine Öle und Essige für alle, die gern kochen.",   // PLATZHALTER_KATEGORIE_ESSIG_TEXT
+      produkte: [
+        { id: "essig-1", name: "PLATZHALTER_ESSIG_1_NAME", beschreibung: "PLATZHALTER_ESSIG_1_BESCHREIBUNG: z. B. Sorte, Füllmenge, Verwendung.",
+          preis: 7.90,    // PLATZHALTER_ESSIG_1_PREIS
+          foto: "" },     // PLATZHALTER_ESSIG_1_FOTO
+        { id: "essig-2", name: "PLATZHALTER_ESSIG_2_NAME", beschreibung: "PLATZHALTER_ESSIG_2_BESCHREIBUNG: z. B. Sorte, Füllmenge, Verwendung.",
+          preis: 9.50,    // PLATZHALTER_ESSIG_2_PREIS
+          foto: "" },     // PLATZHALTER_ESSIG_2_FOTO
+        { id: "essig-3", name: "PLATZHALTER_ESSIG_3_NAME", beschreibung: "PLATZHALTER_ESSIG_3_BESCHREIBUNG: z. B. Sorte, Füllmenge, Verwendung.",
+          preis: 6.20,    // PLATZHALTER_ESSIG_3_PREIS
+          foto: "" }      // PLATZHALTER_ESSIG_3_FOTO
+      ]
+    },
+    {
+      name: "Schokolade und Süßigkeiten", kurz: "Schokolade", icon: "schoko",
+      intro: "Süßes für jeden Anlass.",   // PLATZHALTER_KATEGORIE_SCHOKOLADE_TEXT
+      produkte: [
+        { id: "schoko-1", name: "PLATZHALTER_SCHOKOLADE_1_NAME", beschreibung: "PLATZHALTER_SCHOKOLADE_1_BESCHREIBUNG: z. B. Sorte, Gewicht, Zutaten.",
+          preis: 3.90,    // PLATZHALTER_SCHOKOLADE_1_PREIS
+          foto: "" },     // PLATZHALTER_SCHOKOLADE_1_FOTO
+        { id: "schoko-2", name: "PLATZHALTER_SCHOKOLADE_2_NAME", beschreibung: "PLATZHALTER_SCHOKOLADE_2_BESCHREIBUNG: z. B. Sorte, Gewicht, Zutaten.",
+          preis: 4.50,    // PLATZHALTER_SCHOKOLADE_2_PREIS
+          foto: "" },     // PLATZHALTER_SCHOKOLADE_2_FOTO
+        { id: "schoko-3", name: "PLATZHALTER_SCHOKOLADE_3_NAME", beschreibung: "PLATZHALTER_SCHOKOLADE_3_BESCHREIBUNG: z. B. Sorte, Gewicht, Zutaten.",
+          preis: 6.80,    // PLATZHALTER_SCHOKOLADE_3_PREIS
+          foto: "" }      // PLATZHALTER_SCHOKOLADE_3_FOTO
+      ]
+    },
+    {
+      name: "Tee und Gewürze", kurz: "Tee & Gewürze", icon: "tee",
+      intro: "Tee und Gewürze zum Entdecken und Verfeinern.",   // PLATZHALTER_KATEGORIE_TEE_TEXT
+      produkte: [
+        { id: "tee-1", name: "PLATZHALTER_TEE_1_NAME", beschreibung: "PLATZHALTER_TEE_1_BESCHREIBUNG: z. B. Sorte, Menge, Zubereitung.",
+          preis: 5.90,    // PLATZHALTER_TEE_1_PREIS
+          foto: "" },     // PLATZHALTER_TEE_1_FOTO
+        { id: "tee-2", name: "PLATZHALTER_TEE_2_NAME", beschreibung: "PLATZHALTER_TEE_2_BESCHREIBUNG: z. B. Sorte, Menge, Zubereitung.",
+          preis: 4.20,    // PLATZHALTER_TEE_2_PREIS
+          foto: "" },     // PLATZHALTER_TEE_2_FOTO
+        { id: "tee-3", name: "PLATZHALTER_TEE_3_NAME", beschreibung: "PLATZHALTER_TEE_3_BESCHREIBUNG: z. B. Gewürzmischung, Menge, Verwendung.",
+          preis: 6.50,    // PLATZHALTER_TEE_3_PREIS
+          foto: "" }      // PLATZHALTER_TEE_3_FOTO
+      ]
+    },
+    {
+      name: "Konserven und Eingemachtes", kurz: "Konserven", icon: "konserve",
+      intro: "Eingemachtes und Konserven, die lange Freude machen.",   // PLATZHALTER_KATEGORIE_KONSERVEN_TEXT
+      produkte: [
+        { id: "konserve-1", name: "PLATZHALTER_KONSERVE_1_NAME", beschreibung: "PLATZHALTER_KONSERVE_1_BESCHREIBUNG: z. B. Sorte, Glasgröße, Zutaten.",
+          preis: 5.50,    // PLATZHALTER_KONSERVE_1_PREIS
+          foto: "" },     // PLATZHALTER_KONSERVE_1_FOTO
+        { id: "konserve-2", name: "PLATZHALTER_KONSERVE_2_NAME", beschreibung: "PLATZHALTER_KONSERVE_2_BESCHREIBUNG: z. B. Sorte, Glasgröße, Zutaten.",
+          preis: 6.90,    // PLATZHALTER_KONSERVE_2_PREIS
+          foto: "" },     // PLATZHALTER_KONSERVE_2_FOTO
+        { id: "konserve-3", name: "PLATZHALTER_KONSERVE_3_NAME", beschreibung: "PLATZHALTER_KONSERVE_3_BESCHREIBUNG: z. B. Sorte, Glasgröße, Zutaten.",
+          preis: 4.80,    // PLATZHALTER_KONSERVE_3_PREIS
+          foto: "" }      // PLATZHALTER_KONSERVE_3_FOTO
+      ]
+    },
+    {
+      name: "Honig und Bienenwachskerzen", kurz: "Honig & Kerzen", icon: "honig",
+      intro: "Honig und Kerzen aus Bienenwachs.",   // PLATZHALTER_KATEGORIE_HONIG_TEXT
+      produkte: [
+        { id: "honig-1", name: "PLATZHALTER_HONIG_1_NAME", beschreibung: "PLATZHALTER_HONIG_1_BESCHREIBUNG: z. B. Sorte, Imker, Gewicht.",
+          preis: 7.50,    // PLATZHALTER_HONIG_1_PREIS
+          foto: "" },     // PLATZHALTER_HONIG_1_FOTO
+        { id: "honig-2", name: "PLATZHALTER_HONIG_2_NAME", beschreibung: "PLATZHALTER_HONIG_2_BESCHREIBUNG: z. B. Sorte, Imker, Gewicht.",
+          preis: 9.90,    // PLATZHALTER_HONIG_2_PREIS
+          foto: "" },     // PLATZHALTER_HONIG_2_FOTO
+        { id: "honig-3", name: "PLATZHALTER_HONIG_3_NAME", beschreibung: "PLATZHALTER_HONIG_3_BESCHREIBUNG: z. B. Bienenwachskerze, Größe, Brenndauer.",
+          preis: 8.20,    // PLATZHALTER_HONIG_3_PREIS
+          foto: "" }      // PLATZHALTER_HONIG_3_FOTO
+      ]
+    }
+  ],
+
+  /* ---------- RECHTSTEXTE ----------
+     Hinweis, der über den Rechtstexten erscheint. Auf "" setzen, wenn die
+     Texte ausgefüllt und rechtlich geprüft sind. */
+  musterhinweis: "PLATZHALTER_MUSTERHINWEIS: Dies ist eine Textvorlage. Bitte alle Stellen mit PLATZHALTER ausfüllen und die Texte vor der Veröffentlichung rechtlich prüfen lassen. Diesen Hinweis danach in KONFIG.musterhinweis entfernen."
+};
+
+/* ---------- Texte für Impressum, Datenschutz und Disclaimer ----------
+   Jeder Abschnitt hat eine Überschrift (h) und Absätze (p). Alles hier ist
+   eine Vorlage und muss von Ihnen ausgefüllt und geprüft werden. */
+const RECHTSTEXTE = {
+  impressum: {
+    titel: "Impressum",
+    abschnitte: [
+      { h: "Angaben gemäß § 5 Digitale-Dienste-Gesetz (DDG)", p: [
+        KONFIG.firma.name,
+        "Inhaberin/Inhaber bzw. Geschäftsführung: PLATZHALTER_INHABER_ODER_GESCHAEFTSFUEHRUNG",
+        "Rechtsform: PLATZHALTER_RECHTSFORM",
+        KONFIG.firma.strasse + ", " + KONFIG.firma.plzOrt
+      ]},
+      { h: "Kontakt", p: [
+        "Telefon: " + KONFIG.firma.telefon,
+        "E-Mail: " + KONFIG.firma.email
+      ]},
+      { h: "Registereintrag", p: [
+        "Registergericht: PLATZHALTER_REGISTERGERICHT",
+        "Registernummer: PLATZHALTER_REGISTERNUMMER",
+        "Nur ausfüllen, wenn ein Eintrag besteht; sonst diesen Abschnitt löschen."
+      ]},
+      { h: "Umsatzsteuer-Identifikationsnummer", p: [
+        "USt-IdNr. gemäß § 27a Umsatzsteuergesetz: PLATZHALTER_UST_ID (falls vorhanden)"
+      ]},
+      { h: "Aufsichtsbehörde oder Kammer", p: [
+        "PLATZHALTER_AUFSICHTSBEHOERDE_KAMMER (falls zutreffend)"
+      ]},
+      { h: "Verantwortlich für Inhalte", p: [
+        "PLATZHALTER_VERANTWORTLICHE_PERSON, Anschrift wie oben (falls erforderlich)"
+      ]},
+      { h: "Verbraucherstreitbeilegung", p: [
+        "PLATZHALTER_VERBRAUCHERSCHLICHTUNG: Angabe, ob Sie bereit oder verpflichtet sind, an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen."
+      ]}
+    ]
+  },
+
+  datenschutz: {
+    titel: "Datenschutzerklärung",
+    abschnitte: [
+      { h: "1. Verantwortliche Stelle", p: [
+        KONFIG.firma.name + ", " + KONFIG.firma.strasse + ", " + KONFIG.firma.plzOrt,
+        "Telefon: " + KONFIG.firma.telefon + ", E-Mail: " + KONFIG.firma.email,
+        "Datenschutzbeauftragte/r: PLATZHALTER_DATENSCHUTZBEAUFTRAGTE (falls benannt)"
+      ]},
+      { h: "2. Besuch der Seite und Server-Logfiles", p: [
+        "Beim Aufruf dieser Seite verarbeitet der Server technisch notwendige Daten, insbesondere die IP-Adresse, Datum und Uhrzeit des Abrufs, die aufgerufene Seite und Angaben zum Browser. Dies dient dem sicheren und stabilen Betrieb der Seite. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO.",
+        "Hosting-Anbieter: PLATZHALTER_HOSTING_ANBIETER. Speicherdauer der Logfiles: PLATZHALTER_LOGFILE_SPEICHERDAUER."
+      ]},
+      { h: "3. Bestellung eines Geschenkkorbs", p: [
+        "Wenn Sie einen Geschenkkorb absenden, verarbeiten wir Ihren Namen, Ihre E-Mail-Adresse, Ihre gewählten Produkte und, sofern Sie diese angeben, Ihre Kundennummer, Ihre Telefonnummer und Ihre Nachricht. Wir nutzen die Daten, um den Korb herzurichten, Sie bei Rückfragen zu erreichen und Ihnen eine Bestätigung zu senden. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO.",
+        "Speicherdauer: PLATZHALTER_SPEICHERDAUER_BESTELLUNGEN. Gesetzliche Aufbewahrungspflichten (z. B. nach Handels- und Steuerrecht) bleiben unberührt."
+      ]},
+      { h: "4. E-Mail-Versand und Prüfung der E-Mail-Adresse", p: [
+        "Bestätigung und Bestellinformation werden per E-Mail versendet. Dafür setzen wir den Dienstleister PLATZHALTER_MAIL_DIENSTLEISTER ein. Ihre E-Mail-Adresse wird im Hintergrund auf Gültigkeit geprüft: PLATZHALTER_BESCHREIBUNG_VERIFIZIERUNG."
+      ]},
+      { h: "5. Cookies und lokale Speicherung", p: [
+        "Diese Seite setzt keine Cookies zu Analyse-, Reichweitenmessungs- oder Werbezwecken. Im Browser wird höchstens gespeichert, dass Sie den Hinweis am Seitenrand bestätigt haben. Das ist technisch erforderlich (§ 25 Abs. 2 TDDDG)."
+      ]},
+      { h: "6. Externe Dienste", p: [
+        "Diese Seite lädt keine Schriftarten, Skripte oder Bilder von Servern Dritter. PLATZHALTER_EXTERNE_DIENSTE: Hier ergänzen, falls später externe Dienste (z. B. Karten, Statistik, Schriften) eingebunden werden."
+      ]},
+      { h: "7. Ihre Rechte", p: [
+        "Sie haben das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18), Datenübertragbarkeit (Art. 20) und Widerspruch (Art. 21). Eine erteilte Einwilligung können Sie jederzeit widerrufen.",
+        "Sie können sich außerdem bei einer Datenschutz-Aufsichtsbehörde beschweren. Zuständig ist: PLATZHALTER_DATENSCHUTZ_AUFSICHTSBEHOERDE."
+      ]},
+      { h: "8. Stand", p: [ "PLATZHALTER_STAND_DATUM" ]}
+    ]
+  },
+
+  disclaimer: {
+    titel: "Disclaimer und Hinweise",
+    abschnitte: [
+      { h: "Hinweise zur Bestellung", p: [
+        "PLATZHALTER_BESTELLBEDINGUNGEN: z. B. Abholung im Geschäft, Zahlung vor Ort, Stornierung bis zu einem bestimmten Zeitpunkt.",
+        "Alle Preise verstehen sich in Euro inklusive gesetzlicher Umsatzsteuer. Die Größe des Geschenkkorbs ergibt sich aus der Summe der Einzelpreise der gewählten Produkte.",
+        "Produktabbildungen können vom tatsächlichen Produkt abweichen. Ist ein Produkt nicht verfügbar, melden wir uns bei Ihnen.",
+        "PLATZHALTER_WIDERRUFSHINWEIS: Hinweis zum Widerrufsrecht bzw. dessen Ausschluss."
+      ]},
+      { h: "Alkohol und Jugendschutz", p: [
+        "Alkoholische Getränke geben wir nur nach den Vorgaben des Jugendschutzgesetzes ab. Spirituosen werden nur an Personen ab 18 Jahren abgegeben. PLATZHALTER_ALTERSHINWEIS"
+      ]},
+      { h: "Zutaten und Allergene", p: [
+        "PLATZHALTER_ALLERGENHINWEIS: Angaben zu Zutaten und Allergenen erhalten Sie in unserem Geschäft oder auf Anfrage."
+      ]},
+      { h: "Haftung für Inhalte", p: [
+        "Wir erstellen die Inhalte dieser Seite mit größter Sorgfalt. Für die Richtigkeit, Vollständigkeit und Aktualität können wir jedoch keine Gewähr übernehmen."
+      ]},
+      { h: "Haftung für Links", p: [
+        "Sollte diese Seite auf externe Seiten verweisen, haben wir auf deren Inhalte keinen Einfluss. Für sie ist ausschließlich der jeweilige Betreiber verantwortlich."
+      ]},
+      { h: "Urheberrecht", p: [
+        "Texte, Bilder und Logos auf dieser Seite unterliegen dem Urheberrecht. Eine Verwendung außerhalb dieser Seite bedarf unserer vorherigen Zustimmung."
+      ]}
+    ]
+  }
+};
+</script>
+
+
+<!-- =====================================================================
+     PROGRAMMLOGIK (hier normalerweise nichts ändern)
+     ===================================================================== -->
+<script>
+(function(){
+'use strict';
+
+const $ = s => document.querySelector(s);
+const T = KONFIG.texte, F = KONFIG.firma, K = KONFIG.kategorien, G = KONFIG.groessen;
+
+/* Kleine Hilfsfunktion zum sicheren Erzeugen von HTML-Elementen */
+function h(tag, props, ...kids){
+  const el = document.createElement(tag);
+  if(props){
+    for(const [k, v] of Object.entries(props)){
+      if(v === false || v == null) continue;
+      if(k === 'class') el.className = v;
+      else if(k === 'html') el.innerHTML = v;   // nur für eigene, feste SVG-Grafiken
+      else if(k.startsWith('on')) el.addEventListener(k.slice(2), v);
+      else if(v === true) el.setAttribute(k, '');
+      else el.setAttribute(k, v);
+    }
+  }
+  kids.flat().forEach(kid => { if(kid != null && kid !== false) el.append(kid); });
+  return el;
+}
+
+const EUR = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
+const eur = cent => EUR.format(cent / 100);
+
+/* ---------- Grafiken (Boden der Figur bei y = 0, nach oben negativ) ---------- */
+const ICONS = {
+  wein: '<path d="M-10 0V-34Q-10 -42 -3.5 -46V-58H3.5V-46Q10 -42 10 -34V0Z" fill="#7A3B4F"/><rect x="-4.5" y="-63" width="9" height="7" rx="1.5" fill="#D8B26A"/><rect x="-10" y="-26" width="20" height="14" fill="#F7E3A6"/>',
+  essig: '<path d="M-11 0V-28Q-11 -38 -4 -42V-50H4V-42Q11 -38 11 -28V0Z" fill="#D9A441"/><rect x="-5" y="-56" width="10" height="7" rx="2" fill="#5F7A55"/><rect x="-11" y="-22" width="22" height="12" fill="#FFF9F4"/>',
+  schoko: '<g transform="rotate(-8)"><rect x="-14" y="-42" width="28" height="42" rx="3" fill="#7B4B36"/><path d="M-14 -28H14M-14 -14H14M0 -42V0" stroke="#5A3626" stroke-width="1.5"/><rect x="-14" y="-22" width="28" height="12" fill="#E9A8B5"/></g>',
+  tee: '<rect x="-12" y="-38" width="24" height="38" rx="3" fill="#A9BFA0"/><rect x="-13.5" y="-45" width="27" height="8" rx="2.5" fill="#8CA582"/><circle cx="0" cy="-19" r="7" fill="#FFF9F4"/>',
+  konserve: '<rect x="-13" y="-36" width="26" height="36" rx="6" fill="#D98A75"/><rect x="-11" y="-45" width="22" height="10" rx="2.5" fill="#A94E60"/><rect x="-13" y="-24" width="26" height="12" fill="#FFF9F4"/>',
+  honig: '<g transform="translate(-6 0)"><rect x="-12" y="-30" width="24" height="30" rx="7" fill="#E8B84A"/><rect x="-10" y="-38" width="20" height="9" rx="2.5" fill="#F7E3A6"/></g><rect x="9" y="-34" width="9" height="34" rx="2" fill="#F5E6C8"/><path d="M13.5 -34v-6" stroke="#3B2A30" stroke-width="1.5"/>'
+};
+
+function platzhalterFoto(icon){
+  return '<svg viewBox="-26 -70 52 76" aria-hidden="true" focusable="false">' + (ICONS[icon] || '') + '</svg>';
+}
+
+function korbSvg(){
+  const n = K.length;
+  let slots = '';
+  K.forEach((k, ki) => {
+    const x = 40 + (ki + 0.5) * (160 / n);
+    [1, 0].forEach(nr => {   // zweite Kopie zuerst (liegt hinten)
+      const dx = nr ? 10 : 0, dy = nr ? -3 : 0, sc = nr ? 0.88 : 1;
+      slots += '<g class="slot" data-kat="' + ki + '" data-nr="' + nr + '" transform="translate(' + (x + dx) + ' ' + (118 + dy) + ') scale(' + sc + ')"><g class="pop">' + ICONS[k.icon] + '</g></g>';
+    });
+  });
+  return '<svg class="korb-svg" viewBox="0 0 240 212" aria-hidden="true" focusable="false">' +
+    '<defs><pattern id="korbmuster" width="16" height="18" patternUnits="userSpaceOnUse"><rect width="16" height="18" fill="#E5C39B"/><path d="M0 9H16" stroke="#CDA678" stroke-width="2"/><path d="M4 0V9M12 9V18" stroke="#CDA678" stroke-width="2"/></pattern></defs>' +
+    '<g class="korb-gruppe" id="korbGruppe">' +
+      '<ellipse cx="120" cy="204" rx="88" ry="5" fill="#3B2A30" opacity=".08"/>' +
+      '<path d="M50 106C50 24 190 24 190 106" fill="none" stroke="#CDA678" stroke-width="7" stroke-linecap="round"/>' +
+      slots +
+      '<path d="M30 108H210L188 192Q186 200 178 200H62Q54 200 52 192Z" fill="url(#korbmuster)"/>' +
+      '<rect x="24" y="100" width="192" height="13" rx="6.5" fill="#CDA678"/>' +
+      '<g transform="translate(120 113)"><path d="M0 0C-16 -14 -26 -6 -22 4C-18 12 -6 6 0 0Z" fill="#A94E60"/><path d="M0 0C16 -14 26 -6 22 4C18 12 6 6 0 0Z" fill="#A94E60"/><circle r="5" fill="#8F3F50"/><path d="M-3 4L-10 20M3 4L10 20" stroke="#A94E60" stroke-width="4" stroke-linecap="round"/></g>' +
+    '</g></svg>';
+}
+
+/* ---------- Zustand ---------- */
+const zustand = { auswahl: new Set(), formular: {}, bestellung: null, letzteRoute: '#start' };
+let aktuelleRoute = '#start';
+
+function berechne(){
+  let cent = 0, anzahl = 0;
+  const proKat = K.map(() => []);
+  K.forEach((k, ki) => k.produkte.forEach(p => {
+    if(zustand.auswahl.has(p.id)){ cent += Math.round(p.preis * 100); anzahl++; proKat[ki].push(p); }
+  }));
+  let gi = -1;                                   // -1 = leer
+  if(anzahl > 0){
+    gi = G.findIndex(g => cent <= Math.round(g.bis * 100));
+    if(gi === -1) gi = G.length;                 // über der größten Größe
+  }
+  return { cent, anzahl, proKat, gi };
+}
+function groessenName(gi){
+  if(gi < 0) return 'Noch leer';
+  if(gi >= G.length) return 'Größer als ' + G[G.length - 1].name;
+  return G[gi].name;
+}
+function ueberMaxiGesperrt(b){ return b.gi >= G.length && !KONFIG.ueberMaxiErlaubt; }
+function korbHinweis(b){
+  if(b.gi < 0) return 'Wählen Sie Produkte aus, dann wächst Ihr Korb.';
+  if(b.gi >= G.length){
+    const max = G[G.length - 1];
+    return KONFIG.ueberMaxiErlaubt
+      ? 'Die Summe liegt über ' + eur(max.bis * 100) + '. Wir beraten Sie gern zur Größe.'
+      : 'Die Summe liegt über ' + eur(max.bis * 100) + ', der Grenze der größten Größe. Bitte nehmen Sie ein Produkt heraus.';
+  }
+  const bis = Math.round(G[b.gi].bis * 100);
+  return 'Größe ' + G[b.gi].name + ' gilt bis ' + eur(bis) + '. Bis dahin sind noch ' + eur(bis - b.cent) + ' frei.';
+}
+
+/* ---------- Korb-Seitenleiste ---------- */
+function baueKorb(){
+  const aside = $('#korb');
+  const schalter = h('button', { type: 'button', class: 'korb-schalter', 'aria-expanded': 'false', 'aria-controls': 'korb-detail' },
+    h('span', { class: 'ks-name', id: 'ksName' }),
+    h('span', { class: 'ks-summe', id: 'ksSumme' }),
+    h('span', { class: 'ks-aktion', id: 'ksAktion' }, 'Korb ansehen'));
+  schalter.addEventListener('click', () => {
+    const auf = aside.classList.toggle('offen');
+    schalter.setAttribute('aria-expanded', String(auf));
+    $('#ksAktion').textContent = auf ? 'Schließen' : 'Korb ansehen';
+  });
+  const detail = h('div', { class: 'korb-detail', id: 'korb-detail' },
+    h('h2', null, 'Ihr Geschenkkorb'),
+    h('div', { html: korbSvg() }),
+    h('p', { class: 'groesse' }, h('span', { class: 'gl' }, 'Größe'), h('strong', { id: 'kGroesse' })),
+    h('p', { class: 'summe' }, h('span', { class: 'gl' }, 'Summe'), h('strong', { id: 'kSumme' })),
+    h('p', { class: 'hinweis-klein', id: 'kHinweis' }),
+    h('ol', { class: 'leiter', id: 'kLeiter', 'aria-label': 'Alle Größen' },
+      G.map((g, i) => h('li', { 'data-i': i }, h('strong', null, g.name), h('span', null, 'bis ' + eur(g.bis * 100))))),
+    h('a', { class: 'knopf primaer', id: 'kZiel', href: '#abschluss' }, 'Zur Zusammenfassung'));
+  aside.append(schalter, detail);
+}
+
+function aktualisiereKorb(ansage){
+  const b = berechne();
+  document.querySelectorAll('#korb .slot').forEach(s => {
+    s.classList.toggle('an', b.proKat[+s.dataset.kat].length > +s.dataset.nr);
+  });
+  const anteil = b.gi < 0 ? 0 : Math.min(b.gi, G.length - 1) / Math.max(G.length - 1, 1);
+  $('#korbGruppe').style.setProperty('--s', (0.66 + 0.42 * anteil).toFixed(3));
+
+  const name = groessenName(b.gi);
+  $('#kGroesse').textContent = name;
+  $('#kSumme').textContent = eur(b.cent);
+  $('#kHinweis').textContent = korbHinweis(b);
+  $('#ksName').textContent = (b.gi >= 0 && b.gi < G.length) ? 'Größe ' + name : name;
+  $('#ksSumme').textContent = eur(b.cent);
+  document.querySelectorAll('#kLeiter li').forEach(li => {
+    const i = +li.dataset.i;
+    li.classList.toggle('erreicht', b.gi >= 0 && i <= b.gi);
+    li.classList.toggle('aktuell', i === b.gi);
+    if(i === b.gi) li.setAttribute('aria-current', 'true'); else li.removeAttribute('aria-current');
+  });
+  $('#kZiel').hidden = b.anzahl === 0 || aktuelleRoute === '#abschluss';
+  $('#korb').classList.toggle('leer', b.anzahl === 0);
+  if(ansage) $('#ansage').textContent = b.anzahl ? (name + ', Summe ' + eur(b.cent)) : 'Der Korb ist leer.';
+}
+
+/* ---------- Schrittleiste ---------- */
+function renderSchritte(){
+  const nav = $('#schritte'), ul = nav.querySelector('ul');
+  ul.replaceChildren();
+  const b = berechne();
+  K.forEach((k, i) => {
+    const r = '#kategorie-' + (i + 1);
+    ul.append(h('li', null, h('a', { href: r, 'aria-current': aktuelleRoute === r ? 'step' : false },
+      k.kurz,
+      b.proKat[i].length ? h('span', { class: 'zahl' }, String(b.proKat[i].length), h('span', { class: 'nur-vorlesen' }, ' gewählt')) : null)));
+  });
+  ul.append(h('li', null, h('a', { href: '#abschluss', 'aria-current': aktuelleRoute === '#abschluss' ? 'step' : false }, 'Abschluss')));
+  nav.hidden = !(aktuelleRoute.startsWith('#kategorie-') || aktuelleRoute === '#abschluss');
+}
+
+function auswahlGeaendert(){
+  aktualisiereKorb(true);
+  renderSchritte();
+}
+
+/* ---------- Ansichten ---------- */
+function viewStart(){
+  return h('section', null,
+    h('h1', { tabindex: '-1' }, T.startTitel),
+    T.startText.map(t => h('p', { class: 'lead' }, t)),
+    h('ol', { class: 'ablauf' }, T.startSchritte.map(s => h('li', null, h('strong', null, s.titel), h('span', null, s.text)))),
+    h('a', { class: 'knopf primaer', href: '#kategorie-1' }, T.startButton));
+}
+
+function karte(p, k){
+  const id = 'p-' + p.id;
+  const box = h('input', { type: 'checkbox', id, name: p.id, checked: zustand.auswahl.has(p.id) });
+  box.addEventListener('change', () => {
+    if(box.checked) zustand.auswahl.add(p.id); else zustand.auswahl.delete(p.id);
+    auswahlGeaendert();
+  });
+  const foto = p.foto
+    ? h('span', { class: 'foto' }, h('img', { src: p.foto, alt: '', loading: 'lazy', width: '104', height: '104' }))
+    : h('span', { class: 'foto', html: platzhalterFoto(k.icon) });
+  return h('div', { class: 'karte' }, box,
+    h('label', { for: id, class: 'karte-flaeche' },
+      foto,
+      h('span', { class: 'karte-text' }, h('span', { class: 'karte-name' }, p.name), h('span', { class: 'karte-beschr' }, p.beschreibung)),
+      h('span', { class: 'karte-rechts' }, h('span', { class: 'karte-preis' }, eur(Math.round(p.preis * 100))), h('span', { class: 'haken', 'aria-hidden': 'true' }))));
+}
+
+function viewKategorie(i){
+  const k = K[i], n = K.length;
+  const zurueck = i === 0
+    ? h('a', { class: 'knopf sekundaer', href: '#start' }, 'Zur Startseite')
+    : h('a', { class: 'knopf sekundaer', href: '#kategorie-' + i }, 'Zurück zu ' + K[i - 1].name);
+  const weiter = i === n - 1
+    ? h('a', { class: 'knopf primaer', href: '#abschluss' }, 'Zur Zusammenfassung')
+    : h('a', { class: 'knopf primaer', href: '#kategorie-' + (i + 2) }, 'Weiter zu ' + K[i + 1].name);
+  return h('section', null,
+    h('h1', { tabindex: '-1' }, k.name),
+    h('p', { class: 'lead' }, k.intro),
+    h('div', { class: 'produkte', role: 'group', 'aria-label': k.name }, k.produkte.map(p => karte(p, k))),
+    h('p', { class: 'leise' }, T.preisHinweis),
+    h('div', { class: 'blaettern' }, zurueck, weiter));
+}
+
+/* Formularfelder */
+function fehlerP(id){ return h('p', { class: 'fehler', id: 'f-' + id + '-fehler', hidden: true }); }
+function feld(o){
+  const fid = 'f-' + o.id;
+  const eingabe = o.typ === 'textarea'
+    ? h('textarea', { id: fid, name: o.id, rows: '5', maxlength: '500', autocomplete: 'off' })
+    : h('input', { id: fid, name: o.id, type: o.typ, autocomplete: o.auto, required: !o.opt });
+  eingabe.value = zustand.formular[o.id] || '';
+  const beschr = [];
+  if(o.hinweis) beschr.push(fid + '-hinweis');
+  if(o.zaehler) beschr.push(fid + '-zaehler');
+  beschr.push(fid + '-fehler');
+  eingabe.setAttribute('aria-describedby', beschr.join(' '));
+  if(!o.opt) eingabe.setAttribute('aria-required', 'true');
+  const zaehler = o.zaehler ? h('p', { class: 'zaehler', id: fid + '-zaehler' }, eingabe.value.length + ' von 500 Zeichen') : null;
+  eingabe.addEventListener('input', () => {
+    zustand.formular[o.id] = eingabe.value;
+    if(zaehler) zaehler.textContent = eingabe.value.length + ' von 500 Zeichen';
+  });
+  return h('div', { class: 'feld' },
+    h('label', { for: fid }, o.label, o.opt ? h('span', { class: 'opt' }, ' (optional)') : null),
+    eingabe,
+    o.hinweis ? h('p', { class: 'feld-hinweis', id: fid + '-hinweis' }, o.hinweis) : null,
+    zaehler,
+    fehlerP(o.id));
+}
+
+function viewAbschluss(){
+  const b = berechne();
+  const sec = h('section', null, h('h1', { tabindex: '-1' }, 'Ihr Geschenkkorb im Überblick'));
+
+  if(b.anzahl === 0){
+    sec.append(
+      h('p', { class: 'lead' }, 'Sie haben noch kein Produkt ausgewählt. Wählen Sie mindestens ein Produkt aus, um den Geschenkkorb abzusenden.'),
+      h('a', { class: 'knopf primaer', href: '#kategorie-1' }, 'Produkte auswählen'));
+    return sec;
+  }
+
+  sec.append(h('div', { class: 'ergebnis' },
+    h('div', null, h('span', { class: 'gl' }, 'Größe'), h('span', { class: 'gross' }, groessenName(b.gi))),
+    h('div', null, h('span', { class: 'gl' }, 'Endpreis'), h('span', { class: 'gross' }, eur(b.cent)))));
+  sec.append(h('p', { class: 'leise' }, T.preisHinweis));
+  if(ueberMaxiGesperrt(b)) sec.append(h('p', { class: 'warnbox', role: 'alert' }, korbHinweis(b)));
+
+  sec.append(h('h2', null, 'Ausgewählte Produkte'));
+  K.forEach((k, ki) => {
+    if(!b.proKat[ki].length) return;
+    sec.append(
+      h('div', { class: 'kat-kopf' }, h('span', null, k.name), h('a', { href: '#kategorie-' + (ki + 1) }, 'Ändern')),
+      h('ul', { class: 'liste' }, b.proKat[ki].map(p => h('li', null, h('span', null, p.name), h('span', { class: 'preis' }, eur(Math.round(p.preis * 100)))))));
+  });
+
+  /* Formular */
+  const hatAlkohol = K.some((k, ki) => k.alkohol && b.proKat[ki].length);
+  const dsBox = h('input', { type: 'checkbox', id: 'f-datenschutz', name: 'datenschutz', required: true, 'aria-describedby': 'f-datenschutz-fehler', 'aria-required': 'true' });
+  dsBox.checked = !!zustand.formular.datenschutz;
+  dsBox.addEventListener('change', () => { zustand.formular.datenschutz = dsBox.checked; });
+
+  const hp = h('div', { class: 'hp', 'aria-hidden': 'true' },
+    h('label', { for: 'f-website' }, 'Bitte leer lassen'),
+    h('input', { type: 'text', id: 'f-website', name: 'website', tabindex: '-1', autocomplete: 'off' }));
+
+  const senden = h('button', { type: 'submit', class: 'knopf primaer', id: 'senden', disabled: ueberMaxiGesperrt(b) }, 'Geschenkkorb absenden');
+
+  const form = h('form', { class: 'formular', novalidate: true, 'aria-labelledby': 'form-titel', onsubmit: absenden },
+    h('h2', { id: 'form-titel' }, 'Ihre Angaben'),
+    h('p', { class: 'leise' }, 'Felder ohne den Zusatz „optional“ sind Pflichtfelder.'),
+    feld({ id: 'name', label: 'Name', typ: 'text', auto: 'name' }),
+    feld({ id: 'kundennummer', label: 'Kundennummer', typ: 'text', auto: 'off', opt: true, hinweis: 'Falls vorhanden.' }),
+    feld({ id: 'email', label: 'E-Mail-Adresse', typ: 'email', auto: 'email', hinweis: 'An diese Adresse senden wir die Bestätigung. Wir prüfen die Adresse im Hintergrund.' }),
+    feld({ id: 'telefon', label: 'Telefonnummer', typ: 'tel', auto: 'tel', opt: true, hinweis: 'Für eventuelle Rückfragen.' }),
+    feld({ id: 'nachricht', label: 'Ihre Nachricht an uns', typ: 'textarea', opt: true, zaehler: true, hinweis: 'Zum Beispiel ein Wunsch zur Verpackung oder ein Grußtext für eine Karte.' }),
+    hp,
+    h('div', { class: 'feld check' },
+      h('label', { for: 'f-datenschutz' }, dsBox,
+        h('span', null, 'Ich habe die ', h('a', { href: '#datenschutz', target: '_blank', rel: 'noopener' }, 'Datenschutzerklärung'), ' gelesen. Meine Angaben dürfen zur Bearbeitung meiner Bestellung verwendet werden.')),
+      fehlerP('datenschutz')),
+    h('div', { class: 'hinweisbox' },
+      h('p', null, h('strong', null, 'So geht es weiter: '), T.abholHinweis),
+      hatAlkohol ? h('p', null, T.alkoholHinweis) : null,
+      T.zahlungsHinweis ? h('p', null, T.zahlungsHinweis) : null),
+    KONFIG.mail.endpunkt ? null : h('div', { class: 'testbox' },
+      h('p', null, h('strong', null, 'Testmodus: '), 'Es wird keine E-Mail verschickt, solange KONFIG.mail.endpunkt leer ist. Nach dem Absenden sehen Sie die beiden erzeugten E-Mails als Vorschau.')),
+    h('div', { class: 'warnbox', id: 'sendefehler', role: 'alert', hidden: true }),
+    senden);
+  sec.append(form);
+
+  sec.append(h('div', { class: 'blaettern' },
+    h('a', { class: 'knopf sekundaer', href: '#kategorie-' + K.length }, 'Zurück zu ' + K[K.length - 1].name)));
+  return sec;
+}
+
+/* Prüfung und Versand */
+const MAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+function pruefe(f){
+  const e = {};
+  if(!f.name || f.name.trim().length < 2) e.name = 'Bitte geben Sie Ihren Namen ein.';
+  if(!f.email || !MAIL_RE.test(f.email.trim())) e.email = 'Bitte geben Sie eine gültige E-Mail-Adresse ein, z. B. name@beispiel.de.';
+  if(f.telefon && !/^[0-9+()\/\s.-]{5,}$/.test(f.telefon.trim())) e.telefon = 'Bitte geben Sie die Telefonnummer mit Ziffern ein, z. B. 0123 456789.';
+  if((f.nachricht || '').length > 500) e.nachricht = 'Die Nachricht darf höchstens 500 Zeichen lang sein.';
+  if(!f.datenschutz) e.datenschutz = 'Bitte bestätigen Sie, dass Sie die Datenschutzerklärung gelesen haben.';
+  return e;
+}
+function zeigeFehler(errs){
+  let erstes = null;
+  ['name', 'email', 'telefon', 'nachricht', 'datenschutz'].forEach(id => {
+    const p = $('#f-' + id + '-fehler'), inp = $('#f-' + id);
+    if(errs[id]){ p.textContent = errs[id]; p.hidden = false; inp.setAttribute('aria-invalid', 'true'); if(!erstes) erstes = inp; }
+    else { p.textContent = ''; p.hidden = true; inp.removeAttribute('aria-invalid'); }
+  });
+  if(erstes) erstes.focus();
+  return !!erstes;
+}
+
+function bestellnummer(){
+  const d = new Date();
+  const datum = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+  return 'GK-' + datum + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
+}
+
+function baueMails(nr, b, f){
+  const groesse = groessenName(b.gi);
+  const positionen = [];
+  K.forEach((k, ki) => {
+    if(!b.proKat[ki].length) return;
+    positionen.push(k.name + ':');
+    b.proKat[ki].forEach(p => positionen.push('  - ' + p.name + ' (' + eur(Math.round(p.preis * 100)) + ')'));
+  });
+  const nachricht = (f.nachricht || '').trim();
+  const kundeText = [
+    'Guten Tag ' + f.name.trim() + ',',
+    '',
+    'vielen Dank für Ihre Bestellung bei ' + F.name + '! Wir stellen Ihren Geschenkkorb jetzt für Sie zusammen.',
+    '',
+    'Bestellnummer: ' + nr,
+    'Größe: ' + groesse,
+    'Endpreis: ' + eur(b.cent),
+    '',
+    'Ihre Auswahl:',
+    ...positionen,
+    '',
+    nachricht ? 'Ihre Nachricht an uns:\n' + nachricht + '\n' : null,
+    T.abholHinweis,
+    '',
+    'Bei Fragen erreichen Sie uns unter ' + F.telefon + ' oder ' + F.email + '.',
+    '',
+    'Freundliche Grüße',
+    'Ihr Team von ' + F.name,
+    F.strasse + ', ' + F.plzOrt,
+    F.oeffnungszeiten
+  ].filter(z => z !== null).join('\n');
+
+  const mitarbeiterText = [
+    'Neue Geschenkkorb-Bestellung ' + nr,
+    'Eingegangen: ' + new Date().toLocaleString('de-DE'),
+    '',
+    'Größe: ' + groesse,
+    'Endpreis: ' + eur(b.cent),
+    '',
+    'Kundin/Kunde:',
+    '  Name: ' + f.name.trim(),
+    '  Kundennummer: ' + ((f.kundennummer || '').trim() || 'nicht angegeben'),
+    '  E-Mail: ' + f.email.trim(),
+    '  Telefon: ' + ((f.telefon || '').trim() || 'nicht angegeben'),
+    '',
+    'Bitte zusammenstellen:',
+    ...positionen,
+    '',
+    'Nachricht der Kundin/des Kunden:',
+    nachricht || '(keine)',
+    '',
+    'Zum Antworten einfach auf „Antworten“ klicken, die Adresse der Kundin/des Kunden ist als Antwortadresse hinterlegt.'
+  ].join('\n');
+
+  return {
+    kunde: { an: f.email.trim(), betreff: 'Ihre Geschenkkorb-Bestellung ' + nr + ' bei ' + F.name, text: kundeText },
+    mitarbeiter: { an: KONFIG.mail.mitarbeiterAdresse, antwortAn: f.email.trim(), betreff: 'Neue Bestellung ' + nr + ' (' + groesse + ') von ' + f.name.trim(), text: mitarbeiterText }
+  };
+}
+
+async function absenden(ev){
+  ev.preventDefault();
+  const f = zustand.formular;
+  if(zeigeFehler(pruefe(f))) return;
+  if(f.website) return;                                  // Spam-Falle (Feld bleibt bei Menschen leer)
+  const b = berechne();
+  if(b.anzahl === 0 || ueberMaxiGesperrt(b)) return;
+
+  const knopf = $('#senden'), fehlerBox = $('#sendefehler');
+  fehlerBox.hidden = true;
+  knopf.disabled = true; knopf.textContent = 'Wird gesendet …';
+
+  const nr = bestellnummer();
+  const mails = baueMails(nr, b, f);
+  try{
+    if(KONFIG.mail.endpunkt){
+      /* Der Server sollte diese Daten erneut prüfen (Preise, Größe, E-Mail-Adresse) und
+         die Empfängeradresse des Geschäfts selbst festlegen. */
+      const res = await fetch(KONFIG.mail.endpunkt, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bestellnummer: nr,
+          groesse: groessenName(b.gi),
+          endpreisEuro: b.cent / 100,
+          positionen: K.flatMap((k, ki) => b.proKat[ki].map(p => ({ kategorie: k.name, id: p.id, name: p.name, preisEuro: p.preis }))),
+          kunde: { name: f.name.trim(), kundennummer: (f.kundennummer || '').trim(), email: f.email.trim(), telefon: (f.telefon || '').trim(), nachricht: (f.nachricht || '').trim() },
+          mails
+        })
+      });
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+    }
+    zustand.bestellung = { nr, mails, test: !KONFIG.mail.endpunkt, name: f.name.trim(), email: f.email.trim() };
+    zustand.auswahl.clear();
+    zustand.formular = {};
+    location.hash = '#danke';
+  }catch(err){
+    fehlerBox.textContent = 'Ihre Bestellung konnte nicht gesendet werden. Bitte versuchen Sie es noch einmal oder rufen Sie uns an: ' + F.telefon + '.';
+    fehlerBox.hidden = false;
+    knopf.disabled = false; knopf.textContent = 'Geschenkkorb absenden';
+  }
+}
+
+function mailVorschau(titel, m){
+  return h('details', { class: 'mail' },
+    h('summary', null, titel),
+    h('dl', null,
+      h('dt', null, 'An'), h('dd', null, m.an),
+      m.antwortAn ? [h('dt', null, 'Antwort an'), h('dd', null, m.antwortAn)] : null,
+      h('dt', null, 'Betreff'), h('dd', null, m.betreff)),
+    h('pre', null, m.text));
+}
+
+function viewDanke(){
+  const o = zustand.bestellung;
+  const sec = h('section', null,
+    h('h1', { tabindex: '-1' }, 'Vielen Dank, ' + o.name + '!'),
+    h('p', { class: 'lead' }, 'Ihre Bestellung ' + o.nr + ' ist bei uns eingegangen. Unsere Mitarbeiterinnen richten Ihren Geschenkkorb jetzt her. In der Regel steht er am nächsten Werktag zur Abholung bereit.'),
+    h('p', null, 'Eine Bestätigung erhalten Sie zusätzlich per E-Mail an ' + o.email + '.'));
+  if(o.test){
+    sec.append(h('div', { class: 'testbox' },
+      h('p', null, h('strong', null, 'Testmodus: '), 'Es wurde keine E-Mail verschickt. So würden die beiden E-Mails aussehen:'),
+      mailVorschau('E-Mail an die Kundin/den Kunden', o.mails.kunde),
+      mailVorschau('E-Mail an die Mitarbeiterin/den Mitarbeiter', o.mails.mitarbeiter)));
+  }
+  sec.append(h('p', null, h('a', { class: 'knopf primaer', href: '#start', onclick: () => { zustand.bestellung = null; } }, 'Neuen Geschenkkorb zusammenstellen')));
+  return sec;
+}
+
+function viewRecht(key){
+  const r = RECHTSTEXTE[key];
+  return h('section', { class: 'recht' },
+    h('h1', { tabindex: '-1' }, r.titel),
+    KONFIG.musterhinweis ? h('p', { class: 'musterhinweis' }, KONFIG.musterhinweis) : null,
+    r.abschnitte.map(a => [h('h2', null, a.h), a.p.map(t => h('p', null, t))]),
+    h('p', null, h('a', { class: 'knopf sekundaer', href: zustand.letzteRoute }, 'Zurück zum Geschenkkorb')));
+}
+
+/* ---------- Routing ---------- */
+const ROUTEN = ['#start', ...K.map((k, i) => '#kategorie-' + (i + 1)), '#abschluss', '#danke', '#impressum', '#datenschutz', '#disclaimer'];
+
+function route(erstesMal){
+  let r = location.hash || '#start';
+  if(!ROUTEN.includes(r)) r = '#start';
+  if(r === '#danke' && !zustand.bestellung) r = '#start';
+  aktuelleRoute = r;
+
+  let ansicht, view;
+  if(r === '#start'){ ansicht = 'start'; view = viewStart(); }
+  else if(r.startsWith('#kategorie-')){ ansicht = 'kategorie'; view = viewKategorie(parseInt(r.slice(11), 10) - 1); }
+  else if(r === '#abschluss'){ ansicht = 'abschluss'; view = viewAbschluss(); }
+  else if(r === '#danke'){ ansicht = 'danke'; view = viewDanke(); }
+  else { ansicht = 'recht'; view = viewRecht(r.slice(1)); }
+  if(ansicht !== 'recht') zustand.letzteRoute = (r === '#danke') ? '#start' : r;
+
+  document.body.dataset.ansicht = ansicht;
+  const main = $('#inhalt');
+  main.replaceChildren(view);
+  renderSchritte();
+  aktualisiereKorb(false);
+  $('#korb').classList.remove('offen');
+  $('#korb .korb-schalter').setAttribute('aria-expanded', 'false');
+  $('#ksAktion').textContent = 'Korb ansehen';
+
+  const titel = view.querySelector('h1');
+  document.title = (ansicht === 'start' ? T.seitentitel : titel.textContent) + ' | ' + F.name;
+
+  if(!erstesMal){
+    window.scrollTo(0, 0);
+    titel.focus({ preventScroll: true });
+    const akt = $('#schritte [aria-current]');
+    if(akt && !$('#schritte').hidden) akt.scrollIntoView({ inline: 'center', block: 'nearest' });
+  }
+}
+
+/* ---------- Aufbau der festen Bereiche ---------- */
+function init(){
+  $('#kopf').append(h('a', { class: 'marke', href: '#start' },
+    F.logo ? h('img', { src: F.logo, alt: F.logoAlt }) : null,
+    F.logo ? null : F.name));
+
+  $('#fuss').append(
+    h('nav', { 'aria-label': 'Rechtliches' },
+      h('a', { href: '#impressum' }, 'Impressum'),
+      h('a', { href: '#datenschutz' }, 'Datenschutz'),
+      h('a', { href: '#disclaimer' }, 'Disclaimer und Hinweise')),
+    h('p', null, '© ' + new Date().getFullYear() + ' ' + F.name));
+
+  $('#cookie-text').textContent = T.cookieText;
+  let gesehen = false;
+  try{ gesehen = localStorage.getItem('gk-hinweis') === '1'; }catch(e){}
+  if(!gesehen){
+    $('#cookie-hinweis').hidden = false;
+    $('#cookie-ok').addEventListener('click', () => {
+      $('#cookie-hinweis').hidden = true;
+      try{ localStorage.setItem('gk-hinweis', '1'); }catch(e){}
+    });
+  }
+
+  document.querySelector('.skip').addEventListener('click', e => { e.preventDefault(); $('#inhalt').focus(); });
+
+  baueKorb();
+  route(true);
+  window.addEventListener('hashchange', () => route(false));
+}
+init();
+})();
+</script>
+</body>
+</html>
