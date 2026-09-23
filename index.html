@@ -52,7 +52,7 @@ a{color:var(--rose-dunkel)}
 
 /* Schrittleiste */
 .schritte{border-bottom:1px solid var(--linie)}
-.schritte ul{max-width:70rem;margin:0 auto;padding:.75rem 1.25rem .9rem;list-style:none;display:flex;gap:.5rem;overflow-x:auto}
+.schritte ul{position:relative;max-width:70rem;margin:0 auto;padding:.75rem 1.25rem .9rem;list-style:none;display:flex;gap:.5rem;overflow-x:auto}
 .schritte a{display:inline-flex;align-items:center;gap:.5rem;white-space:nowrap;padding:.5rem .95rem;border:2px solid var(--linie);border-radius:999px;background:var(--karte);color:var(--text);text-decoration:none;font-weight:600;font-size:.98rem}
 .schritte a:hover{border-color:var(--rose)}
 .schritte a[aria-current="step"]{background:var(--rose);border-color:var(--rose);color:#fff}
@@ -61,9 +61,11 @@ a{color:var(--rose-dunkel)}
 /* Seitenaufbau */
 .rahmen{max-width:70rem;margin:0 auto;padding:2rem 1.25rem 3rem;display:grid;grid-template-columns:minmax(0,1fr) 20rem;gap:2.75rem;align-items:start}
 body[data-ansicht="recht"] .rahmen,
-body[data-ansicht="danke"] .rahmen{grid-template-columns:minmax(0,46rem);justify-content:center}
+body[data-ansicht="danke"] .rahmen,
+body[data-ansicht="wahl"] .rahmen{grid-template-columns:minmax(0,46rem);justify-content:center}
 body[data-ansicht="recht"] .korb,
-body[data-ansicht="danke"] .korb{display:none}
+body[data-ansicht="danke"] .korb,
+body[data-ansicht="wahl"] .korb{display:none}
 
 h1{font:600 clamp(1.9rem,4vw,2.7rem)/1.15 var(--serif);letter-spacing:-.01em;margin:0 0 .9rem}
 h2{font:600 1.35rem/1.25 var(--serif);margin:2rem 0 .6rem}
@@ -84,13 +86,18 @@ h2{font:600 1.35rem/1.25 var(--serif);margin:2rem 0 .6rem}
 .ablauf strong{font-weight:700}
 .ablauf span{color:var(--leise)}
 
+.wahl-karten{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1.25rem;margin:1.75rem 0 1.5rem;max-width:56rem}
+.wahl-karte{display:flex;flex-direction:column;gap:.65rem;padding:1.5rem;background:var(--karte);border:2px solid var(--linie);border-radius:16px}
+.wahl-karte h2{margin:0;font-size:1.3rem}
+.wahl-karte p{margin:0;color:var(--leise)}
+.wahl-karte .preisspanne{display:inline-block;align-self:flex-start;padding:.3rem .8rem;border-radius:999px;background:var(--butter-hell);color:var(--text);font-weight:600;font-size:.92rem}
+.vorlage-liste{list-style:disc;margin:0;padding-left:1.2rem;color:var(--leise);font-size:.95rem}
+.wahl-karte .knopf{margin-top:.4rem;align-self:flex-start}
+
 /* Produktkarten */
 .produkte{display:grid;gap:.85rem;margin:1.5rem 0 2rem}
-.karte{position:relative}
-.karte input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer;z-index:1}
 .karte-flaeche{display:grid;grid-template-columns:6.5rem minmax(0,1fr) auto;gap:1rem;align-items:center;padding:.85rem 1rem .85rem .85rem;background:var(--karte);border:2px solid var(--linie);border-radius:14px}
-.karte input:checked + .karte-flaeche{background:var(--butter-hell);border-color:var(--rose)}
-.karte input:focus-visible + .karte-flaeche{outline:3px solid var(--text);outline-offset:3px}
+.karte-flaeche.gewaehlt{background:var(--butter-hell);border-color:var(--rose)}
 .foto{width:6.5rem;height:6.5rem;border-radius:10px;overflow:hidden;background:var(--butter-hell);display:grid;place-items:center}
 .foto img{width:100%;height:100%;object-fit:cover;display:block}
 .foto svg{width:62%;height:auto}
@@ -99,10 +106,11 @@ h2{font:600 1.35rem/1.25 var(--serif);margin:2rem 0 .6rem}
 .karte-beschr{display:block;color:var(--leise);font-size:.98rem;margin-top:.2rem;overflow-wrap:anywhere;hyphens:auto}
 .karte-rechts{display:flex;flex-direction:column;align-items:flex-end;gap:.6rem}
 .karte-preis{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
-.haken{width:1.6rem;height:1.6rem;border:2px solid var(--rose);border-radius:6px;background:#fff;display:grid;place-items:center}
-.haken::after{content:"";width:.38rem;height:.75rem;border:solid #fff;border-width:0 3px 3px 0;transform:translate(0,-1px) rotate(45deg);opacity:0}
-.karte input:checked + .karte-flaeche .haken{background:var(--rose)}
-.karte input:checked + .karte-flaeche .haken::after{opacity:1}
+.stepper{display:inline-flex;align-items:center;gap:.55rem;border:2px solid var(--rose);border-radius:999px;padding:.25rem;background:#fff}
+.stepper-knopf{width:2rem;height:2rem;border-radius:50%;border:0;background:var(--rose);color:#fff;font:700 1.2rem/1 var(--sans);cursor:pointer;display:grid;place-items:center}
+.stepper-knopf:hover:not(:disabled){background:var(--rose-dunkel)}
+.stepper-knopf:disabled{background:var(--linie);color:var(--leise);cursor:not-allowed}
+.stepper-menge{min-width:1.6rem;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
 .blaettern{display:flex;flex-wrap:wrap;gap:.75rem;justify-content:space-between;margin-top:1rem}
 
 /* Korb (Seitenleiste) */
@@ -114,15 +122,8 @@ h2{font:600 1.35rem/1.25 var(--serif);margin:2rem 0 .6rem}
 .slot.an .pop{opacity:1;transform:none}
 .korb p{margin:.25rem 0}
 .gl{display:block;font-size:.9rem;color:var(--leise)}
-.groesse strong{font:600 1.7rem/1.2 var(--serif)}
-.summe strong{font:700 1.25rem var(--sans);font-variant-numeric:tabular-nums}
+.summe strong{font:600 1.7rem/1.2 var(--serif)}
 .hinweis-klein{font-size:.95rem;color:var(--leise);margin-top:.6rem!important}
-.leiter{list-style:none;margin:.9rem 0 1rem;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem}
-.leiter li{border:1px solid var(--linie);border-radius:8px;padding:.3rem .25rem;text-align:center;font-size:.85rem;line-height:1.25;background:#fff}
-.leiter strong{display:block;font-size:.95rem}
-.leiter span{color:var(--leise)}
-.leiter li.erreicht{background:var(--salbei-hell);border-color:var(--salbei)}
-.leiter li.aktuell{background:var(--butter);border-color:var(--text);border-width:2px}
 .korb .knopf{display:block;width:100%}
 .korb-schalter{display:none}
 
@@ -182,7 +183,6 @@ details.mail pre{white-space:pre-wrap;word-break:break-word;margin:.5rem 0 .25re
 @media (max-width:56rem){
   .rahmen{grid-template-columns:minmax(0,1fr);padding-top:1.5rem;padding-bottom:calc(var(--leiste-h) + 2rem)}
   .fuss{padding-bottom:calc(var(--leiste-h) + 1.5rem)}
-  body[data-ansicht="start"] .korb.leer{display:none}
   .korb{position:fixed;left:0;right:0;bottom:0;top:auto;max-height:none;overflow:visible;padding:0;border-width:1px 0 0;border-radius:18px 18px 0 0;z-index:40;box-shadow:0 -4px 16px rgba(59,42,48,.12)}
   .korb-schalter{display:flex;align-items:center;gap:.85rem;width:100%;min-height:var(--leiste-h);padding:.5rem 1.1rem;background:transparent;border:0;font:inherit;color:var(--text);cursor:pointer;text-align:left}
   .ks-bild{flex:none;width:4.7rem;line-height:0;margin:-1.4rem 0 -.3rem}
@@ -204,7 +204,7 @@ details.mail pre{white-space:pre-wrap;word-break:break-word;margin:.5rem 0 .25re
 }
 </style>
 </head>
-<body data-ansicht="start">
+<body data-ansicht="wahl">
 <noscript><p style="padding:1rem">Bitte aktivieren Sie JavaScript, um den Geschenkkorb zu konfigurieren.</p></noscript>
 <a class="skip" href="#inhalt">Zum Inhalt springen</a>
 
@@ -244,9 +244,9 @@ const KONFIG = {
 
   /* ---------- FIRMA ---------- */
   firma: {
-    name: "Wittl e.K.",
-    logo: "img/Logo.jpeg",                                   // PLATZHALTER_FIRMENLOGO, z. B. "bilder/logo.png"
-    logoAlt: "Logo der Firma Wittl e.K.",  // Beschreibung des Logos für Screenreader
+    name: "PLATZHALTER_FIRMENNAME",
+    logo: "",                                   // PLATZHALTER_FIRMENLOGO, z. B. "bilder/logo.png"
+    logoAlt: "PLATZHALTER_FIRMENLOGO_ALTTEXT",  // Beschreibung des Logos für Screenreader
     strasse: "PLATZHALTER_STRASSE_HAUSNUMMER",
     plzOrt: "PLATZHALTER_PLZ_ORT",
     telefon: "PLATZHALTER_TELEFON",
@@ -257,17 +257,27 @@ const KONFIG = {
   /* ---------- TEXTE ---------- */
   texte: {
     seitentitel: "Geschenkkorb konfigurieren",   // PLATZHALTER_SEITENTITEL
-    startTitel: "Ein Geschenkkorb, ganz nach Ihrem Geschmack",   // PLATZHALTER_STARTTITEL
+    startTitel: "Ihr Geschenkkorb, ganz nach Ihrem Geschmack",   // PLATZHALTER_STARTTITEL
     startText: [                                                  // PLATZHALTER_STARTTEXT
       "Stellen Sie sich in wenigen Schritten einen Geschenkkorb zusammen, der genau zu der Person passt, die Sie beschenken möchten.",
-      "Wählen Sie aus unseren Kategorien die Produkte aus, die in den Korb sollen. Der Korb wächst mit Ihrer Auswahl, und Sie sehen jederzeit, welche Größe und welchen Preis er hat."
+      "Sie können jedes Produkt einzeln auswählen oder mit einer fertigen Vorlage starten und diese danach noch anpassen."
     ],
     startSchritte: [                                              // PLATZHALTER_STARTSCHRITTE
-      { titel: "Produkte auswählen", text: "Gehen Sie die Kategorien durch und kreuzen Sie an, was in den Korb soll. Sie können jederzeit zwischen den Kategorien wechseln." },
-      { titel: "Größe und Preis sehen", text: "Der Korb zeigt laufend seine Größe, von Mini bis Maxi, und die Summe der Einzelpreise." },
+      { titel: "Produkte auswählen", text: "Gehen Sie die Kategorien durch und stellen Sie mit Plus und Minus die gewünschte Menge ein. Sie können jederzeit zwischen den Kategorien wechseln." },
+      { titel: "Korb und Preis sehen", text: "Der Korb wächst mit Ihrer Auswahl, und Sie sehen jederzeit die Summe der Einzelpreise." },
       { titel: "Absenden und abholen", text: "Wir richten den Korb für Sie her. In der Regel steht er am nächsten Werktag zur Abholung bereit." }
     ],
-    startButton: "Geschenkkorb konfigurieren - los geht's!",
+    // Texte für die Wahl zwischen individueller Konfiguration und Vorlage (Startseite)
+    wahlIndividuellTitel: "Individuell konfigurieren",          // PLATZHALTER_WAHL_INDIVIDUELL_TITEL
+    wahlIndividuellText: "Sie stellen jedes Produkt selbst zusammen, Kategorie für Kategorie.",   // PLATZHALTER_WAHL_INDIVIDUELL_TEXT
+    wahlIndividuellButton: "Individuell konfigurieren - los geht's!",   // PLATZHALTER_WAHL_INDIVIDUELL_BUTTON
+    wahlVorlageTitel: "Vorkonfigurierter Geschenkkorb",         // PLATZHALTER_WAHL_VORLAGE_TITEL
+    wahlVorlageText: "Wir schlagen Ihnen eine fertige Auswahl vor. Sie können sie danach noch anpassen.",   // PLATZHALTER_WAHL_VORLAGE_TEXT
+    wahlVorlageButton: "Vorlagen ansehen",                       // PLATZHALTER_WAHL_VORLAGE_BUTTON
+    // Texte für die Vorlagenauswahl
+    vorlagenTitel: "Wählen Sie eine Vorlage",                    // PLATZHALTER_VORLAGEN_TITEL
+    vorlagenText: "Jede Vorlage enthält bereits eine Auswahl an Produkten. Im nächsten Schritt können Sie diese noch verändern.",   // PLATZHALTER_VORLAGEN_TEXT
+    vorlagenButton: "Diesen Korb wählen",                        // PLATZHALTER_VORLAGEN_BUTTON
     // Hinweistexte im letzten Schritt
     abholHinweis: "Mit dem Absenden wird Ihr Geschenkkorb von unseren Mitarbeiterinnen hergerichtet. In der Regel steht er am nächsten Werktag zur Abholung bereit. Zusätzlich erhalten Sie eine Bestätigung per E-Mail.",   // PLATZHALTER_ABHOLHINWEIS
     alkoholHinweis: "Alkoholische Getränke werden nur nach den Vorgaben des Jugendschutzgesetzes abgegeben (Spirituosen ab 18 Jahren).",   // PLATZHALTER_ALKOHOLHINWEIS
@@ -276,17 +286,34 @@ const KONFIG = {
     cookieText: "Diese Seite setzt keine Cookies zu Analyse- oder Werbezwecken. Gespeichert wird höchstens, dass Sie diesen Hinweis gesehen haben. Details finden Sie in der Datenschutzerklärung."   // PLATZHALTER_COOKIETEXT
   },
 
-  /* ---------- GRÖSSEN (aufsteigend; "bis" = Obergrenze in Euro, einschließlich) ---------- */
-  groessen: [
-    { name: "Mini",   bis: 10 },
-    { name: "Klein",  bis: 20 },
-    { name: "Mittel", bis: 30 },
-    { name: "Groß",   bis: 50 },
-    { name: "XL",     bis: 75 },
-    { name: "Maxi",   bis: 100 }
+  /* ---------- HÖCHSTPREIS ----------
+     Der Geschenkkorb wächst beim individuellen Konfigurieren visuell mit der Summe der
+     Einzelpreise; ab diesem Betrag (in Euro) ist der Korb "voll". */
+  maxGesamtpreis: 100,                       // PLATZHALTER_MAX_GESAMTPREIS
+  // false = Bestellung über dem Höchstpreis ist nicht möglich; true = möglich (Bestellung "auf Anfrage")
+  ueberGrenzeErlaubt: false,
+
+  /* ---------- VORKONFIGURIERTE GESCHENKKÖRBE ----------
+     "eintraege" verweist per [Kategorie-Index, Produkt-Index] (jeweils ab 0 gezählt) auf die
+     aktuelle Liste der Produktkategorien und ihrer Produkte weiter unten. 0 = Wein und
+     Spirituosen, 1 = Essig und Öl, 2 = Schokolade und Süßigkeiten, 3 = Tee und Gewürze,
+     4 = Konserven und Eingemachtes, 5 = Honig und Bienenwachskerzen. [0,0] ist also das erste
+     Produkt bei Wein und Spirituosen, [2,1] das zweite Produkt bei Schokolade und Süßigkeiten.
+     Fehlt ein Produkt an dieser Stelle (weil es gelöscht wurde), wird es einfach ausgelassen. */
+  vorlagen: [
+    {
+      name: "Klein", preisspanne: "ca. 15–30 €",   // PLATZHALTER_VORLAGE_KLEIN_PREISSPANNE
+      eintraege: [[0, 0], [2, 1], [3, 2]]
+    },
+    {
+      name: "Mittel", preisspanne: "ca. 30–50 €",   // PLATZHALTER_VORLAGE_MITTEL_PREISSPANNE
+      eintraege: [[0, 1], [1, 0], [2, 1], [3, 2], [4, 0]]
+    },
+    {
+      name: "Groß", preisspanne: "ab ca. 50 €",   // PLATZHALTER_VORLAGE_GROSS_PREISSPANNE
+      eintraege: [[0, 2], [1, 0], [2, 1], [3, 2], [4, 1], [5, 0]]
+    }
   ],
-  // false = Bestellung ist über der größten Größe nicht möglich; true = möglich (Größe "auf Anfrage")
-  ueberMaxiErlaubt: true,
 
   /* ---------- E-MAIL ---------- */
   mail: {
@@ -297,6 +324,9 @@ const KONFIG = {
   },
 
   /* ---------- PRODUKTE ----------
+     HINWEIS: Liegt neben dieser Seite eine Datei "produkte.json", werden die Produkte
+     von dort geladen und im Bearbeitungsbereich (Ordner "verwaltung") gepflegt. Die
+     Einträge hier gelten dann nur noch als Ersatz, falls die Datei fehlt.
      Jede Kategorie enthält eine Liste "produkte". Weitere Produkte einfach
      als neuen Block { ... } ergänzen; "id" muss eindeutig sein.
      preis = Rohpreis in Euro (Punkt als Dezimaltrennzeichen).
@@ -508,7 +538,8 @@ const RECHTSTEXTE = {
 'use strict';
 
 const $ = s => document.querySelector(s);
-const T = KONFIG.texte, F = KONFIG.firma, K = KONFIG.kategorien, G = KONFIG.groessen;
+const T = KONFIG.texte, F = KONFIG.firma, K = KONFIG.kategorien;
+const MAX_MENGE = 20;   // höchste je Produkt wählbare Menge
 
 /* Kleine Hilfsfunktion zum sicheren Erzeugen von HTML-Elementen */
 function h(tag, props, ...kids){
@@ -568,38 +599,35 @@ function korbSvg(sfx){
 }
 
 /* ---------- Zustand ---------- */
-const zustand = { auswahl: new Set(), formular: {}, bestellung: null, letzteRoute: '#start' };
+// auswahl: { produktId: menge }
+const zustand = { auswahl: {}, formular: {}, bestellung: null, letzteRoute: '#start' };
 let aktuelleRoute = '#start';
+
+function mengeVon(id){ return zustand.auswahl[id] || 0; }
+function mengeSetzen(id, menge){
+  menge = Math.max(0, Math.min(MAX_MENGE, menge));
+  if(menge <= 0) delete zustand.auswahl[id]; else zustand.auswahl[id] = menge;
+}
 
 function berechne(){
   let cent = 0, anzahl = 0;
   const proKat = K.map(() => []);
   K.forEach((k, ki) => k.produkte.forEach(p => {
-    if(zustand.auswahl.has(p.id)){ cent += Math.round(p.preis * 100); anzahl++; proKat[ki].push(p); }
+    const menge = mengeVon(p.id);
+    if(menge > 0){ cent += Math.round(p.preis * 100) * menge; anzahl += menge; proKat[ki].push({ p, menge }); }
   }));
-  let gi = -1;                                   // -1 = leer
-  if(anzahl > 0){
-    gi = G.findIndex(g => cent <= Math.round(g.bis * 100));
-    if(gi === -1) gi = G.length;                 // über der größten Größe
-  }
-  return { cent, anzahl, proKat, gi };
+  return { cent, anzahl, proKat };
 }
-function groessenName(gi){
-  if(gi < 0) return 'Noch leer';
-  if(gi >= G.length) return 'Größer als ' + G[G.length - 1].name;
-  return G[gi].name;
-}
-function ueberMaxiGesperrt(b){ return b.gi >= G.length && !KONFIG.ueberMaxiErlaubt; }
+const GRENZE_CENT = () => Math.round(KONFIG.maxGesamtpreis * 100);
+function ueberGrenzeGesperrt(b){ return b.cent > GRENZE_CENT() && !KONFIG.ueberGrenzeErlaubt; }
 function korbHinweis(b){
-  if(b.gi < 0) return 'Wählen Sie Produkte aus, dann wächst Ihr Korb.';
-  if(b.gi >= G.length){
-    const max = G[G.length - 1];
-    return KONFIG.ueberMaxiErlaubt
-      ? 'Die Summe liegt über ' + eur(max.bis * 100) + '. Wir beraten Sie gern zur Größe.'
-      : 'Die Summe liegt über ' + eur(max.bis * 100) + ', der Grenze der größten Größe. Bitte nehmen Sie ein Produkt heraus.';
+  if(b.anzahl === 0) return 'Ihr Korb ist noch leer.';
+  if(b.cent > GRENZE_CENT()){
+    return KONFIG.ueberGrenzeErlaubt
+      ? 'Die Summe liegt über ' + eur(GRENZE_CENT()) + '. Wir beraten Sie gern.'
+      : 'Die Summe liegt über ' + eur(GRENZE_CENT()) + '. Bitte nehmen Sie ein Produkt heraus.';
   }
-  const bis = Math.round(G[b.gi].bis * 100);
-  return 'Größe ' + G[b.gi].name + ' gilt bis ' + eur(bis) + '. Bis dahin sind noch ' + eur(bis - b.cent) + ' frei.';
+  return (b.anzahl === 1 ? '1 Artikel im Korb.' : b.anzahl + ' Artikel im Korb.');
 }
 
 /* ---------- Korb-Seitenleiste ---------- */
@@ -619,11 +647,8 @@ function baueKorb(){
   const detail = h('div', { class: 'korb-detail', id: 'korb-detail' },
     h('h2', null, 'Ihr Geschenkkorb'),
     h('div', { html: korbSvg('gross') }),
-    h('p', { class: 'groesse' }, h('span', { class: 'gl' }, 'Größe'), h('strong', { id: 'kGroesse' })),
     h('p', { class: 'summe' }, h('span', { class: 'gl' }, 'Summe'), h('strong', { id: 'kSumme' })),
     h('p', { class: 'hinweis-klein', id: 'kHinweis' }),
-    h('ol', { class: 'leiter', id: 'kLeiter', 'aria-label': 'Alle Größen' },
-      G.map((g, i) => h('li', { 'data-i': i }, h('strong', null, g.name), h('span', null, 'bis ' + eur(g.bis * 100))))),
     h('a', { class: 'knopf primaer', id: 'kZiel', href: '#abschluss' }, 'Zur Zusammenfassung'));
   aside.append(schalter, detail);
 }
@@ -631,26 +656,19 @@ function baueKorb(){
 function aktualisiereKorb(ansage){
   const b = berechne();
   document.querySelectorAll('#korb .slot').forEach(s => {
-    s.classList.toggle('an', b.proKat[+s.dataset.kat].length > +s.dataset.nr);
+    const menge = b.proKat[+s.dataset.kat].reduce((summe, e) => summe + e.menge, 0);
+    s.classList.toggle('an', menge > +s.dataset.nr);
   });
-  const anteil = b.gi < 0 ? 0 : Math.min(b.gi, G.length - 1) / Math.max(G.length - 1, 1);
+  const anteil = Math.min(b.cent / GRENZE_CENT(), 1);
   document.querySelectorAll('.korb-gruppe').forEach(g => g.style.setProperty('--s', (0.66 + 0.42 * anteil).toFixed(3)));
 
-  const name = groessenName(b.gi);
-  $('#kGroesse').textContent = name;
   $('#kSumme').textContent = eur(b.cent);
   $('#kHinweis').textContent = korbHinweis(b);
-  $('#ksName').textContent = (b.gi >= 0 && b.gi < G.length) ? 'Größe ' + name : name;
+  $('#ksName').textContent = b.anzahl ? (b.anzahl === 1 ? '1 Artikel' : b.anzahl + ' Artikel') : 'Noch leer';
   $('#ksSumme').textContent = eur(b.cent);
-  document.querySelectorAll('#kLeiter li').forEach(li => {
-    const i = +li.dataset.i;
-    li.classList.toggle('erreicht', b.gi >= 0 && i <= b.gi);
-    li.classList.toggle('aktuell', i === b.gi);
-    if(i === b.gi) li.setAttribute('aria-current', 'true'); else li.removeAttribute('aria-current');
-  });
   $('#kZiel').hidden = b.anzahl === 0 || aktuelleRoute === '#abschluss';
   $('#korb').classList.toggle('leer', b.anzahl === 0);
-  if(ansage) $('#ansage').textContent = b.anzahl ? (name + ', Summe ' + eur(b.cent)) : 'Der Korb ist leer.';
+  if(ansage) $('#ansage').textContent = b.anzahl ? (b.anzahl + ' Artikel, Summe ' + eur(b.cent)) : 'Der Korb ist leer.';
 }
 
 /* ---------- Schrittleiste ---------- */
@@ -662,7 +680,7 @@ function renderSchritte(){
     const r = '#kategorie-' + (i + 1);
     ul.append(h('li', null, h('a', { href: r, 'aria-current': aktuelleRoute === r ? 'step' : false },
       k.kurz,
-      b.proKat[i].length ? h('span', { class: 'zahl' }, String(b.proKat[i].length), h('span', { class: 'nur-vorlesen' }, ' gewählt')) : null)));
+      (() => { const m = b.proKat[i].reduce((s2, e) => s2 + e.menge, 0); return m ? h('span', { class: 'zahl' }, String(m), h('span', { class: 'nur-vorlesen' }, ' gewählt')) : null; })())));
   });
   ul.append(h('li', null, h('a', { href: '#abschluss', 'aria-current': aktuelleRoute === '#abschluss' ? 'step' : false }, 'Abschluss')));
   nav.hidden = !(aktuelleRoute.startsWith('#kategorie-') || aktuelleRoute === '#abschluss');
@@ -679,24 +697,68 @@ function viewStart(){
     h('h1', { tabindex: '-1' }, T.startTitel),
     T.startText.map(t => h('p', { class: 'lead' }, t)),
     h('ol', { class: 'ablauf' }, T.startSchritte.map(s => h('li', null, h('strong', null, s.titel), h('span', null, s.text)))),
-    h('a', { class: 'knopf primaer', href: '#kategorie-1' }, T.startButton));
+    h('div', { class: 'wahl-karten' },
+      h('article', { class: 'wahl-karte' },
+        h('h2', null, T.wahlIndividuellTitel),
+        h('p', null, T.wahlIndividuellText),
+        h('a', { class: 'knopf primaer', href: '#kategorie-1' }, T.wahlIndividuellButton)),
+      h('article', { class: 'wahl-karte' },
+        h('h2', null, T.wahlVorlageTitel),
+        h('p', null, T.wahlVorlageText),
+        h('a', { class: 'knopf primaer', href: '#vorlagen' }, T.wahlVorlageButton))));
+}
+
+/** Liefert zu einer Vorlage die tatsächlich vorhandenen Produkte (fehlende Einträge werden ausgelassen). */
+function vorlageProdukte(v){
+  return v.eintraege.map(([ki, pi]) => (K[ki] && K[ki].produkte[pi]) || null).filter(Boolean);
+}
+function vorlageWaehlen(v){
+  zustand.auswahl = {};
+  vorlageProdukte(v).forEach(p => { zustand.auswahl[p.id] = (zustand.auswahl[p.id] || 0) + 1; });
+}
+function viewVorlagen(){
+  return h('section', null,
+    h('h1', { tabindex: '-1' }, T.vorlagenTitel),
+    h('p', { class: 'lead' }, T.vorlagenText),
+    h('div', { class: 'wahl-karten' }, KONFIG.vorlagen.map(v => {
+      const enthalten = vorlageProdukte(v);
+      return h('article', { class: 'wahl-karte' },
+        h('h2', null, v.name),
+        h('span', { class: 'preisspanne' }, v.preisspanne),
+        enthalten.length
+          ? h('ul', { class: 'vorlage-liste' }, enthalten.map(p => h('li', null, p.name)))
+          : h('p', null, 'Diese Vorlage enthält im Moment keine Produkte.'),
+        h('a', { class: 'knopf primaer', href: '#kategorie-1', onclick: () => vorlageWaehlen(v) }, T.vorlagenButton));
+    })),
+    h('p', null, h('a', { class: 'knopf sekundaer', href: '#start' }, 'Zurück zur Startseite')));
 }
 
 function karte(p, k){
-  const id = 'p-' + p.id;
-  const box = h('input', { type: 'checkbox', id, name: p.id, checked: zustand.auswahl.has(p.id) });
-  box.addEventListener('change', () => {
-    if(box.checked) zustand.auswahl.add(p.id); else zustand.auswahl.delete(p.id);
-    auswahlGeaendert();
-  });
+  let menge = mengeVon(p.id);
   const foto = p.foto
     ? h('span', { class: 'foto' }, h('img', { src: p.foto, alt: '', loading: 'lazy', width: '104', height: '104' }))
     : h('span', { class: 'foto', html: platzhalterFoto(k.icon) });
-  return h('div', { class: 'karte' }, box,
-    h('label', { for: id, class: 'karte-flaeche' },
-      foto,
-      h('span', { class: 'karte-text' }, h('span', { class: 'karte-name' }, p.name), h('span', { class: 'karte-beschr' }, p.beschreibung)),
-      h('span', { class: 'karte-rechts' }, h('span', { class: 'karte-preis' }, eur(Math.round(p.preis * 100))), h('span', { class: 'haken', 'aria-hidden': 'true' }))));
+  const mengeSpan = h('span', { class: 'stepper-menge' }, String(menge));
+  const minus = h('button', { type: 'button', class: 'stepper-knopf', 'aria-label': 'Menge verringern für ' + p.name }, '\u2212');
+  const plus  = h('button', { type: 'button', class: 'stepper-knopf', 'aria-label': 'Menge erhöhen für ' + p.name }, '+');
+  const flaeche = h('div', { class: 'karte-flaeche' },
+    foto,
+    h('span', { class: 'karte-text' }, h('span', { class: 'karte-name' }, p.name), h('span', { class: 'karte-beschr' }, p.beschreibung)),
+    h('span', { class: 'karte-rechts' },
+      h('span', { class: 'karte-preis' }, eur(Math.round(p.preis * 100))),
+      h('span', { class: 'stepper', role: 'group', 'aria-label': 'Menge für ' + p.name }, minus, mengeSpan, plus)));
+
+  function aktualisiereKarte(){
+    menge = mengeVon(p.id);
+    mengeSpan.textContent = String(menge);
+    minus.disabled = menge <= 0;
+    plus.disabled = menge >= MAX_MENGE;
+    flaeche.classList.toggle('gewaehlt', menge > 0);
+  }
+  minus.addEventListener('click', () => { mengeSetzen(p.id, mengeVon(p.id) - 1); aktualisiereKarte(); auswahlGeaendert(); });
+  plus.addEventListener('click', () => { mengeSetzen(p.id, mengeVon(p.id) + 1); aktualisiereKarte(); auswahlGeaendert(); });
+  aktualisiereKarte();
+  return h('div', { class: 'karte' }, flaeche);
 }
 
 function viewKategorie(i){
@@ -710,7 +772,9 @@ function viewKategorie(i){
   return h('section', null,
     h('h1', { tabindex: '-1' }, k.name),
     h('p', { class: 'lead' }, k.intro),
-    h('div', { class: 'produkte', role: 'group', 'aria-label': k.name }, k.produkte.map(p => karte(p, k))),
+    k.produkte.length
+      ? h('div', { class: 'produkte', role: 'group', 'aria-label': k.name }, k.produkte.map(p => karte(p, k)))
+      : h('p', { class: 'lead' }, 'In dieser Kategorie gibt es im Moment keine Produkte. Bitte schauen Sie in die anderen Kategorien.'),
     h('p', { class: 'leise' }, T.preisHinweis),
     h('div', { class: 'blaettern' }, zurueck, weiter));
 }
@@ -754,17 +818,19 @@ function viewAbschluss(){
   }
 
   sec.append(h('div', { class: 'ergebnis' },
-    h('div', null, h('span', { class: 'gl' }, 'Größe'), h('span', { class: 'gross' }, groessenName(b.gi))),
+    h('div', null, h('span', { class: 'gl' }, 'Ausgewählte Artikel'), h('span', { class: 'gross' }, String(b.anzahl))),
     h('div', null, h('span', { class: 'gl' }, 'Endpreis'), h('span', { class: 'gross' }, eur(b.cent)))));
   sec.append(h('p', { class: 'leise' }, T.preisHinweis));
-  if(ueberMaxiGesperrt(b)) sec.append(h('p', { class: 'warnbox', role: 'alert' }, korbHinweis(b)));
+  if(ueberGrenzeGesperrt(b)) sec.append(h('p', { class: 'warnbox', role: 'alert' }, korbHinweis(b)));
 
   sec.append(h('h2', null, 'Ausgewählte Produkte'));
   K.forEach((k, ki) => {
     if(!b.proKat[ki].length) return;
     sec.append(
       h('div', { class: 'kat-kopf' }, h('span', null, k.name), h('a', { href: '#kategorie-' + (ki + 1) }, 'Ändern')),
-      h('ul', { class: 'liste' }, b.proKat[ki].map(p => h('li', null, h('span', null, p.name), h('span', { class: 'preis' }, eur(Math.round(p.preis * 100)))))));
+      h('ul', { class: 'liste' }, b.proKat[ki].map(({ p, menge }) => h('li', null,
+        h('span', null, p.name + (menge > 1 ? ' \u00d7 ' + menge : '')),
+        h('span', { class: 'preis' }, eur(Math.round(p.preis * 100) * menge))))));
   });
 
   /* Formular */
@@ -777,7 +843,7 @@ function viewAbschluss(){
     h('label', { for: 'f-website' }, 'Bitte leer lassen'),
     h('input', { type: 'text', id: 'f-website', name: 'website', tabindex: '-1', autocomplete: 'off' }));
 
-  const senden = h('button', { type: 'submit', class: 'knopf primaer', id: 'senden', disabled: ueberMaxiGesperrt(b) }, 'Geschenkkorb absenden');
+  const senden = h('button', { type: 'submit', class: 'knopf primaer', id: 'senden', disabled: ueberGrenzeGesperrt(b) }, 'Geschenkkorb absenden');
 
   const form = h('form', { class: 'formular', novalidate: true, 'aria-labelledby': 'form-titel', onsubmit: absenden },
     h('h2', { id: 'form-titel' }, 'Ihre Angaben'),
@@ -836,12 +902,11 @@ function bestellnummer(){
 }
 
 function baueMails(nr, b, f){
-  const groesse = groessenName(b.gi);
   const positionen = [];
   K.forEach((k, ki) => {
     if(!b.proKat[ki].length) return;
     positionen.push(k.name + ':');
-    b.proKat[ki].forEach(p => positionen.push('  - ' + p.name + ' (' + eur(Math.round(p.preis * 100)) + ')'));
+    b.proKat[ki].forEach(({ p, menge }) => positionen.push('  - ' + menge + 'x ' + p.name + ' (' + eur(Math.round(p.preis * 100) * menge) + ')'));
   });
   const nachricht = (f.nachricht || '').trim();
   const kundeText = [
@@ -850,7 +915,6 @@ function baueMails(nr, b, f){
     'vielen Dank für Ihre Bestellung bei ' + F.name + '! Wir stellen Ihren Geschenkkorb jetzt für Sie zusammen.',
     '',
     'Bestellnummer: ' + nr,
-    'Größe: ' + groesse,
     'Endpreis: ' + eur(b.cent),
     '',
     'Ihre Auswahl:',
@@ -871,7 +935,7 @@ function baueMails(nr, b, f){
     'Neue Geschenkkorb-Bestellung ' + nr,
     'Eingegangen: ' + new Date().toLocaleString('de-DE'),
     '',
-    'Größe: ' + groesse,
+    'Anzahl Artikel: ' + b.anzahl,
     'Endpreis: ' + eur(b.cent),
     '',
     'Kundin/Kunde:',
@@ -891,7 +955,7 @@ function baueMails(nr, b, f){
 
   return {
     kunde: { an: f.email.trim(), betreff: 'Ihre Geschenkkorb-Bestellung ' + nr + ' bei ' + F.name, text: kundeText },
-    mitarbeiter: { an: KONFIG.mail.mitarbeiterAdresse, antwortAn: f.email.trim(), betreff: 'Neue Bestellung ' + nr + ' (' + groesse + ') von ' + f.name.trim(), text: mitarbeiterText }
+    mitarbeiter: { an: KONFIG.mail.mitarbeiterAdresse, antwortAn: f.email.trim(), betreff: 'Neue Bestellung ' + nr + ' (' + b.anzahl + ' Artikel) von ' + f.name.trim(), text: mitarbeiterText }
   };
 }
 
@@ -901,7 +965,7 @@ async function absenden(ev){
   if(zeigeFehler(pruefe(f))) return;
   if(f.website) return;                                  // Spam-Falle (Feld bleibt bei Menschen leer)
   const b = berechne();
-  if(b.anzahl === 0 || ueberMaxiGesperrt(b)) return;
+  if(b.anzahl === 0 || ueberGrenzeGesperrt(b)) return;
 
   const knopf = $('#senden'), fehlerBox = $('#sendefehler');
   fehlerBox.hidden = true;
@@ -918,9 +982,8 @@ async function absenden(ev){
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           bestellnummer: nr,
-          groesse: groessenName(b.gi),
           endpreisEuro: b.cent / 100,
-          positionen: K.flatMap((k, ki) => b.proKat[ki].map(p => ({ kategorie: k.name, id: p.id, name: p.name, preisEuro: p.preis }))),
+          positionen: K.flatMap((k, ki) => b.proKat[ki].map(({ p, menge }) => ({ kategorie: k.name, id: p.id, name: p.name, preisEuro: p.preis, menge }))),
           kunde: { name: f.name.trim(), kundennummer: (f.kundennummer || '').trim(), email: f.email.trim(), telefon: (f.telefon || '').trim(), nachricht: (f.nachricht || '').trim() },
           mails
         })
@@ -928,7 +991,7 @@ async function absenden(ev){
       if(!res.ok) throw new Error('HTTP ' + res.status);
     }
     zustand.bestellung = { nr, mails, test: !KONFIG.mail.endpunkt, name: f.name.trim(), email: f.email.trim() };
-    zustand.auswahl.clear();
+    zustand.auswahl = {};
     zustand.formular = {};
     location.hash = '#danke';
   }catch(err){
@@ -974,7 +1037,7 @@ function viewRecht(key){
 }
 
 /* ---------- Routing ---------- */
-const ROUTEN = ['#start', ...K.map((k, i) => '#kategorie-' + (i + 1)), '#abschluss', '#danke', '#impressum', '#datenschutz', '#disclaimer'];
+const ROUTEN = ['#start', '#vorlagen', ...K.map((k, i) => '#kategorie-' + (i + 1)), '#abschluss', '#danke', '#impressum', '#datenschutz', '#disclaimer'];
 
 function route(erstesMal){
   let r = location.hash || '#start';
@@ -983,7 +1046,8 @@ function route(erstesMal){
   aktuelleRoute = r;
 
   let ansicht, view;
-  if(r === '#start'){ ansicht = 'start'; view = viewStart(); }
+  if(r === '#start'){ ansicht = 'wahl'; view = viewStart(); }
+  else if(r === '#vorlagen'){ ansicht = 'wahl'; view = viewVorlagen(); }
   else if(r.startsWith('#kategorie-')){ ansicht = 'kategorie'; view = viewKategorie(parseInt(r.slice(11), 10) - 1); }
   else if(r === '#abschluss'){ ansicht = 'abschluss'; view = viewAbschluss(); }
   else if(r === '#danke'){ ansicht = 'danke'; view = viewDanke(); }
@@ -1000,7 +1064,7 @@ function route(erstesMal){
   $('#ksAktion').textContent = 'Korb ansehen';
 
   const titel = view.querySelector('h1');
-  document.title = (ansicht === 'start' ? T.seitentitel : titel.textContent) + ' | ' + F.name;
+  document.title = (r === '#start' ? T.seitentitel : titel.textContent) + ' | ' + F.name;
 
   if(!erstesMal){
     window.scrollTo(0, 0);
@@ -1008,6 +1072,33 @@ function route(erstesMal){
     const akt = $('#schritte [aria-current]');
     if(akt && !$('#schritte').hidden) akt.scrollIntoView({ inline: 'center', block: 'nearest' });
   }
+}
+
+/* ---------- Produkte aus produkte.json laden (falls vorhanden) ---------- */
+async function ladeProdukte(){
+  try{
+    const ac = new AbortController();
+    const timer = setTimeout(() => ac.abort(), 4000);
+    const res = await fetch('produkte.json', { cache: 'no-cache', signal: ac.signal });
+    clearTimeout(timer);
+    if(!res.ok) return;
+    const daten = await res.json();
+    const kat = daten && daten.kategorien;
+    if(!kat || typeof kat !== 'object') return;
+    K.forEach(k => {
+      const liste = kat[k.icon];
+      if(!Array.isArray(liste)) return;
+      k.produkte = liste
+        .filter(p => p && typeof p.name === 'string' && p.name.trim() && p.id)
+        .map(p => ({
+          id: String(p.id),
+          name: String(p.name),
+          beschreibung: String(p.beschreibung || ''),
+          preis: Math.max(0, Number(p.preis) || 0),
+          foto: /^bilder\/[A-Za-z0-9._-]+$/.test(String(p.foto || '')) ? String(p.foto) : ''
+        }));
+    });
+  }catch(e){ /* Datei fehlt oder ist nicht lesbar: Beispielprodukte aus der Konfiguration verwenden */ }
 }
 
 /* ---------- Aufbau der festen Bereiche ---------- */
@@ -1040,7 +1131,7 @@ function init(){
   route(true);
   window.addEventListener('hashchange', () => route(false));
 }
-init();
+ladeProdukte().then(init);
 })();
 </script>
 </body>
