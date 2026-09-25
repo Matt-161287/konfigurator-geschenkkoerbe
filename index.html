@@ -91,7 +91,7 @@ h2{font:600 1.35rem/1.25 var(--serif);margin:2rem 0 .6rem}
 .wahl-karte h2{margin:0;font-size:1.3rem}
 .wahl-karte p{margin:0;color:var(--leise)}
 .wahl-karte .preisspanne{display:inline-block;align-self:flex-start;padding:.3rem .8rem;border-radius:999px;background:var(--butter-hell);color:var(--text);font-weight:600;font-size:.92rem}
-.vorlage-liste{list-style:disc;margin:0;padding-left:1.2rem;color:var(--leise);font-size:.95rem}
+.blumen{display:flex;gap:.2rem}
 .wahl-karte .knopf{margin-top:.4rem;align-self:flex-start}
 
 /* Produktkarten */
@@ -260,24 +260,29 @@ const KONFIG = {
     startTitel: "Ihr Geschenkkorb, ganz nach Ihrem Geschmack",   // PLATZHALTER_STARTTITEL
     startText: [                                                  // PLATZHALTER_STARTTEXT
       "Stellen Sie sich in wenigen Schritten einen Geschenkkorb zusammen, der genau zu der Person passt, die Sie beschenken möchten.",
-      "Sie können jedes Produkt einzeln auswählen oder mit einer fertigen Vorlage starten und diese danach noch anpassen."
+      "Sie können jedes Produkt einzeln auswählen oder sich zu Ihrem Budget einen Zufallsvorschlag erstellen lassen und diesen danach noch anpassen."
     ],
     startSchritte: [                                              // PLATZHALTER_STARTSCHRITTE
       { titel: "Produkte auswählen", text: "Gehen Sie die Kategorien durch und stellen Sie mit Plus und Minus die gewünschte Menge ein. Sie können jederzeit zwischen den Kategorien wechseln." },
       { titel: "Korb und Preis sehen", text: "Der Korb wächst mit Ihrer Auswahl, und Sie sehen jederzeit die Summe der Einzelpreise." },
       { titel: "Absenden und abholen", text: "Wir richten den Korb für Sie her. In der Regel steht er am nächsten Werktag zur Abholung bereit." }
     ],
-    // Texte für die Wahl zwischen individueller Konfiguration und Vorlage (Startseite)
+    // Texte für die Wahl zwischen individueller Konfiguration und Zufallsgenerator (Startseite)
     wahlIndividuellTitel: "Individuell konfigurieren",          // PLATZHALTER_WAHL_INDIVIDUELL_TITEL
     wahlIndividuellText: "Sie stellen jedes Produkt selbst zusammen, Kategorie für Kategorie.",   // PLATZHALTER_WAHL_INDIVIDUELL_TEXT
     wahlIndividuellButton: "Individuell konfigurieren - los geht's!",   // PLATZHALTER_WAHL_INDIVIDUELL_BUTTON
-    wahlVorlageTitel: "Vorkonfigurierter Geschenkkorb",         // PLATZHALTER_WAHL_VORLAGE_TITEL
-    wahlVorlageText: "Wir schlagen Ihnen eine fertige Auswahl vor. Sie können sie danach noch anpassen.",   // PLATZHALTER_WAHL_VORLAGE_TEXT
-    wahlVorlageButton: "Vorlagen ansehen",                       // PLATZHALTER_WAHL_VORLAGE_BUTTON
-    // Texte für die Vorlagenauswahl
-    vorlagenTitel: "Wählen Sie eine Vorlage",                    // PLATZHALTER_VORLAGEN_TITEL
-    vorlagenText: "Jede Vorlage enthält bereits eine Auswahl an Produkten. Im nächsten Schritt können Sie diese noch verändern.",   // PLATZHALTER_VORLAGEN_TEXT
-    vorlagenButton: "Diesen Korb wählen",                        // PLATZHALTER_VORLAGEN_BUTTON
+    wahlZufallTitel: "Zufallsgeschenkkorb nach Budget",          // PLATZHALTER_WAHL_ZUFALL_TITEL
+    wahlZufallText: "Sie nennen uns Ihr Budget, wir schlagen Ihnen einen passenden Korb vor. Sie können ihn danach noch anpassen.",   // PLATZHALTER_WAHL_ZUFALL_TEXT
+    wahlZufallButton: "Zufallsgeschenkkorb nach Budget",         // PLATZHALTER_WAHL_ZUFALL_BUTTON
+    // Texte für die Budgetauswahl
+    budgetTitel: "Wählen Sie Ihr Budget",                        // PLATZHALTER_BUDGET_TITEL
+    budgetText: "Wir stellen Ihnen einen zufälligen Geschenkkorb bis zu diesem Betrag zusammen.",   // PLATZHALTER_BUDGET_TEXT
+    // Texte für den Zufallsvorschlag
+    zufallTitel: "Ihr Vorschlag",                                // PLATZHALTER_ZUFALL_TITEL
+    zufallText: "Das ist unser Vorschlag für Ihr Budget. Im nächsten Schritt können Sie ihn noch verändern.",   // PLATZHALTER_ZUFALL_TEXT
+    zufallNeuButton: "Neu mischen",                              // PLATZHALTER_ZUFALL_NEU_BUTTON
+    zufallWeiterButton: "Weiter zur individuellen Anpassung",    // PLATZHALTER_ZUFALL_WEITER_BUTTON
+    zufallKeinErgebnis: "Für dieses Budget konnten wir leider keinen Korb mit mindestens drei Produkten zusammenstellen. Bitte wählen Sie ein höheres Budget oder stellen Sie Ihren Korb individuell zusammen.",   // PLATZHALTER_ZUFALL_KEIN_ERGEBNIS
     // Hinweistexte im letzten Schritt
     abholHinweis: "Mit dem Absenden wird Ihr Geschenkkorb von unseren Mitarbeiterinnen hergerichtet. In der Regel steht er am nächsten Werktag zur Abholung bereit. Zusätzlich erhalten Sie eine Bestätigung per E-Mail.",   // PLATZHALTER_ABHOLHINWEIS
     alkoholHinweis: "Alkoholische Getränke werden nur nach den Vorgaben des Jugendschutzgesetzes abgegeben (Spirituosen ab 18 Jahren).",   // PLATZHALTER_ALKOHOLHINWEIS
@@ -293,27 +298,22 @@ const KONFIG = {
   // false = Bestellung über dem Höchstpreis ist nicht möglich; true = möglich (Bestellung "auf Anfrage")
   ueberGrenzeErlaubt: false,
 
-  /* ---------- VORKONFIGURIERTE GESCHENKKÖRBE ----------
-     "eintraege" verweist per [Kategorie-Index, Produkt-Index] (jeweils ab 0 gezählt) auf die
-     aktuelle Liste der Produktkategorien und ihrer Produkte weiter unten. 0 = Wein und
-     Spirituosen, 1 = Essig und Öl, 2 = Schokolade und Süßigkeiten, 3 = Tee und Gewürze,
-     4 = Konserven und Eingemachtes, 5 = Honig und Bienenwachskerzen. [0,0] ist also das erste
-     Produkt bei Wein und Spirituosen, [2,1] das zweite Produkt bei Schokolade und Süßigkeiten.
-     Fehlt ein Produkt an dieser Stelle (weil es gelöscht wurde), wird es einfach ausgelassen. */
-  vorlagen: [
-    {
-      name: "Klein", preisspanne: "ca. 15–30 €",   // PLATZHALTER_VORLAGE_KLEIN_PREISSPANNE
-      eintraege: [[0, 0], [2, 1], [3, 2]]
-    },
-    {
-      name: "Mittel", preisspanne: "ca. 30–50 €",   // PLATZHALTER_VORLAGE_MITTEL_PREISSPANNE
-      eintraege: [[0, 1], [1, 0], [2, 1], [3, 2], [4, 0]]
-    },
-    {
-      name: "Groß", preisspanne: "ab ca. 50 €",   // PLATZHALTER_VORLAGE_GROSS_PREISSPANNE
-      eintraege: [[0, 2], [1, 0], [2, 1], [3, 2], [4, 1], [5, 0]]
-    }
+  /* ---------- ZUFALLSGESCHENKKORB NACH BUDGET ----------
+     "betrag" ist die Obergrenze in Euro; bei "strengUnter: true" gilt sie ausschließlich
+     (z. B. "unter 15 €"), sonst einschließlich (z. B. "bis 25 €"). "blumen" bestimmt, wie
+     viele Blumen-Symbole bei dieser Stufe angezeigt werden. Wein und Spirituosen werden erst
+     ab der zweiten Stufe berücksichtigt (siehe "weinAbStufe" weiter unten). */
+  zufallsBudgets: [
+    { label: "unter 15 €", betrag: 15, strengUnter: true, blumen: 1 },   // PLATZHALTER_BUDGET_1_LABEL
+    { label: "bis 25 €",   betrag: 25, blumen: 2 },                       // PLATZHALTER_BUDGET_2_LABEL
+    { label: "bis 45 €",   betrag: 45, blumen: 3 },                       // PLATZHALTER_BUDGET_3_LABEL
+    { label: "bis 65 €",   betrag: 65, blumen: 4 }                        // PLATZHALTER_BUDGET_4_LABEL
   ],
+  // Ab dieser Budgetstufe (0 = erste Stufe) wird Wein und Spirituosen mit einbezogen.
+  zufallWeinAbStufe: 1,
+  // Wie viele Produkte ein zufälliger Geschenkkorb mindestens bzw. höchstens enthält.
+  zufallMinProdukte: 3,
+  zufallMaxProdukte: 8,
 
   /* ---------- E-MAIL ---------- */
   mail: {
@@ -600,7 +600,7 @@ function korbSvg(sfx){
 
 /* ---------- Zustand ---------- */
 // auswahl: { produktId: menge }
-const zustand = { auswahl: {}, formular: {}, bestellung: null, letzteRoute: '#start' };
+const zustand = { auswahl: {}, formular: {}, bestellung: null, zufall: null, letzteRoute: '#start' };
 let aktuelleRoute = '#start';
 
 function mengeVon(id){ return zustand.auswahl[id] || 0; }
@@ -703,34 +703,109 @@ function viewStart(){
         h('p', null, T.wahlIndividuellText),
         h('a', { class: 'knopf primaer', href: '#kategorie-1' }, T.wahlIndividuellButton)),
       h('article', { class: 'wahl-karte' },
-        h('h2', null, T.wahlVorlageTitel),
-        h('p', null, T.wahlVorlageText),
-        h('a', { class: 'knopf primaer', href: '#vorlagen' }, T.wahlVorlageButton))));
+        h('h2', null, T.wahlZufallTitel),
+        h('p', null, T.wahlZufallText),
+        h('a', { class: 'knopf primaer', href: '#budget' }, T.wahlZufallButton))));
 }
 
-/** Liefert zu einer Vorlage die tatsächlich vorhandenen Produkte (fehlende Einträge werden ausgelassen). */
-function vorlageProdukte(v){
-  return v.eintraege.map(([ki, pi]) => (K[ki] && K[ki].produkte[pi]) || null).filter(Boolean);
+/* ---------- Zufallsgeschenkkorb nach Budget ---------- */
+const BLUME_SVG = '<svg viewBox="-11 -11 22 22" width="18" height="18" aria-hidden="true" focusable="false"><g fill="#A94E60"><circle cx="0" cy="-5.4" r="3.6"/><circle cx="4.7" cy="-1.6" r="3.6"/><circle cx="2.9" cy="4.5" r="3.6"/><circle cx="-2.9" cy="4.5" r="3.6"/><circle cx="-4.7" cy="-1.6" r="3.6"/></g><circle r="2.6" fill="#F7E3A6"/></svg>';
+
+function budgetCent(tier){ return Math.round(tier.betrag * 100) - (tier.strengUnter ? 1 : 0); }
+
+function mischen(liste){
+  const a = liste.slice();
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
-function vorlageWaehlen(v){
-  zustand.auswahl = {};
-  vorlageProdukte(v).forEach(p => { zustand.auswahl[p.id] = (zustand.auswahl[p.id] || 0) + 1; });
+
+/** Stellt zufällig einen Geschenkkorb bis zu einer Preisgrenze zusammen (ohne doppelte Produkte).
+    Probiert mehrere zufällige Reihenfolgen durch und behält die Zusammenstellung, die das Budget
+    am besten ausschöpft, ohne es zu überschreiten. Gibt null zurück, wenn keine Zusammenstellung
+    mit der Mindestanzahl an Produkten möglich ist. */
+function zufallskorbErzeugen(tierIndex){
+  const tier = KONFIG.zufallsBudgets[tierIndex];
+  const grenze = budgetCent(tier);
+  const weinErlaubt = tierIndex >= KONFIG.zufallWeinAbStufe;
+  const kandidaten = [];
+  K.forEach((k, ki) => {
+    if(k.icon === 'wein' && !weinErlaubt) return;
+    k.produkte.forEach(p => kandidaten.push({ p, ki, preis: Math.round(p.preis * 100) }));
+  });
+
+  let bester = null;
+  for(let versuch = 0; versuch < 300; versuch++){
+    let summe = 0;
+    const gewaehlt = [];
+    for(const kand of mischen(kandidaten)){
+      if(gewaehlt.length >= KONFIG.zufallMaxProdukte) break;
+      if(summe + kand.preis <= grenze){ gewaehlt.push(kand); summe += kand.preis; }
+    }
+    if(gewaehlt.length >= KONFIG.zufallMinProdukte && (!bester || summe > bester.summe)){
+      bester = { summe, items: gewaehlt };
+      if(bester.summe === grenze) break;
+    }
+  }
+  return bester;
 }
-function viewVorlagen(){
+
+function viewBudget(){
   return h('section', null,
-    h('h1', { tabindex: '-1' }, T.vorlagenTitel),
-    h('p', { class: 'lead' }, T.vorlagenText),
-    h('div', { class: 'wahl-karten' }, KONFIG.vorlagen.map(v => {
-      const enthalten = vorlageProdukte(v);
-      return h('article', { class: 'wahl-karte' },
-        h('h2', null, v.name),
-        h('span', { class: 'preisspanne' }, v.preisspanne),
-        enthalten.length
-          ? h('ul', { class: 'vorlage-liste' }, enthalten.map(p => h('li', null, p.name)))
-          : h('p', null, 'Diese Vorlage enthält im Moment keine Produkte.'),
-        h('a', { class: 'knopf primaer', href: '#kategorie-1', onclick: () => vorlageWaehlen(v) }, T.vorlagenButton));
-    })),
+    h('h1', { tabindex: '-1' }, T.budgetTitel),
+    h('p', { class: 'lead' }, T.budgetText),
+    h('div', { class: 'wahl-karten' }, KONFIG.zufallsBudgets.map((tier, i) => h('article', { class: 'wahl-karte' },
+      h('h2', null, tier.label),
+      h('span', { class: 'blumen', html: BLUME_SVG.repeat(tier.blumen), 'aria-hidden': 'true' }),
+      h('span', { class: 'nur-vorlesen' }, tier.blumen + (tier.blumen === 1 ? ' Blume' : ' Blumen')),
+      h('a', { class: 'knopf primaer', href: '#zufall-ergebnis', onclick: () => { zustand.zufall = { tierIndex: i, ergebnis: zufallskorbErzeugen(i) }; } }, 'Auswählen')))),
     h('p', null, h('a', { class: 'knopf sekundaer', href: '#start' }, 'Zurück zur Startseite')));
+}
+
+function zufallKorbUebernehmen(){
+  zustand.auswahl = {};
+  zustand.zufall.ergebnis.items.forEach(({ p }) => { zustand.auswahl[p.id] = 1; });
+}
+
+function viewZufallErgebnis(){
+  const zufall = zustand.zufall;
+  const tier = KONFIG.zufallsBudgets[zufall.tierIndex];
+  const sec = h('section', null, h('h1', { tabindex: '-1' }, T.zufallTitel));
+
+  if(!zufall.ergebnis){
+    sec.append(
+      h('p', { class: 'lead' }, T.zufallKeinErgebnis),
+      h('div', { class: 'blaettern' },
+        h('a', { class: 'knopf sekundaer', href: '#budget' }, 'Anderes Budget wählen'),
+        h('a', { class: 'knopf primaer', href: '#kategorie-1' }, T.wahlIndividuellButton)));
+    return sec;
+  }
+
+  const proKat = K.map(() => []);
+  zufall.ergebnis.items.forEach(({ p, ki }) => proKat[ki].push(p));
+
+  sec.append(
+    h('p', { class: 'lead' }, T.zufallText),
+    h('div', { class: 'ergebnis' },
+      h('div', null, h('span', { class: 'gl' }, 'Budget'), h('span', { class: 'gross' }, tier.label)),
+      h('div', null, h('span', { class: 'gl' }, 'Ausgewählte Artikel'), h('span', { class: 'gross' }, String(zufall.ergebnis.items.length))),
+      h('div', null, h('span', { class: 'gl' }, 'Preis'), h('span', { class: 'gross' }, eur(zufall.ergebnis.summe)))));
+
+  K.forEach((k, ki) => {
+    if(!proKat[ki].length) return;
+    sec.append(
+      h('div', { class: 'kat-kopf' }, h('span', null, k.name)),
+      h('ul', { class: 'liste' }, proKat[ki].map(p => h('li', null, h('span', null, p.name), h('span', { class: 'preis' }, eur(Math.round(p.preis * 100)))))));
+  });
+
+  sec.append(
+    h('div', { class: 'blaettern' },
+      h('a', { class: 'knopf sekundaer', href: '#budget' }, 'Anderes Budget wählen'),
+      h('button', { type: 'button', class: 'knopf sekundaer', onclick: () => { zustand.zufall = { tierIndex: zufall.tierIndex, ergebnis: zufallskorbErzeugen(zufall.tierIndex) }; route(false); } }, T.zufallNeuButton),
+      h('a', { class: 'knopf primaer', href: '#kategorie-1', onclick: zufallKorbUebernehmen }, T.zufallWeiterButton)));
+  return sec;
 }
 
 function karte(p, k){
@@ -1037,7 +1112,7 @@ function viewRecht(key){
 }
 
 /* ---------- Routing ---------- */
-const ROUTEN = ['#start', '#vorlagen', ...K.map((k, i) => '#kategorie-' + (i + 1)), '#abschluss', '#danke', '#impressum', '#datenschutz', '#disclaimer'];
+const ROUTEN = ['#start', '#budget', '#zufall-ergebnis', ...K.map((k, i) => '#kategorie-' + (i + 1)), '#abschluss', '#danke', '#impressum', '#datenschutz', '#disclaimer'];
 
 function route(erstesMal){
   let r = location.hash || '#start';
@@ -1047,7 +1122,11 @@ function route(erstesMal){
 
   let ansicht, view;
   if(r === '#start'){ ansicht = 'wahl'; view = viewStart(); }
-  else if(r === '#vorlagen'){ ansicht = 'wahl'; view = viewVorlagen(); }
+  else if(r === '#budget'){ ansicht = 'wahl'; view = viewBudget(); }
+  else if(r === '#zufall-ergebnis'){
+    if(!zustand.zufall){ r = '#budget'; ansicht = 'wahl'; view = viewBudget(); }
+    else { ansicht = 'wahl'; view = viewZufallErgebnis(); }
+  }
   else if(r.startsWith('#kategorie-')){ ansicht = 'kategorie'; view = viewKategorie(parseInt(r.slice(11), 10) - 1); }
   else if(r === '#abschluss'){ ansicht = 'abschluss'; view = viewAbschluss(); }
   else if(r === '#danke'){ ansicht = 'danke'; view = viewDanke(); }
