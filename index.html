@@ -117,6 +117,7 @@ h2{font:600 1.35rem/1.25 var(--serif);margin:2rem 0 .6rem}
 .korb{position:sticky;top:1rem;max-height:calc(100vh - 2rem);overflow:auto;background:var(--karte);border:1px solid var(--linie);border-radius:18px;padding:1.1rem 1.1rem 1.25rem}
 .korb h2{margin:0 0 .25rem;font-size:1.15rem}
 .korb-svg{display:block;width:100%;height:auto;max-width:17rem;margin:0 auto}
+.zufall-bild{margin:0 0 1.5rem}
 .korb-gruppe{transform:scale(var(--s,.66));transform-origin:120px 204px;transition:transform .55s cubic-bezier(.3,1.3,.5,1)}
 .pop{opacity:0;transform:translateY(16px);transition:opacity .3s,transform .45s cubic-bezier(.3,1.4,.5,1)}
 .slot.an .pop{opacity:1;transform:none}
@@ -244,8 +245,8 @@ const KONFIG = {
 
   /* ---------- FIRMA ---------- */
   firma: {
-    name: "Wittl e.K.",
-    logo: "img/Logo.jpeg",                                   // PLATZHALTER_FIRMENLOGO, z. B. "bilder/logo.png"
+    name: "PLATZHALTER_FIRMENNAME",
+    logo: "",                                   // PLATZHALTER_FIRMENLOGO, z. B. "bilder/logo.png"
     logoAlt: "PLATZHALTER_FIRMENLOGO_ALTTEXT",  // Beschreibung des Logos für Screenreader
     strasse: "PLATZHALTER_STRASSE_HAUSNUMMER",
     plzOrt: "PLATZHALTER_PLZ_ORT",
@@ -282,7 +283,8 @@ const KONFIG = {
     zufallText: "Das ist unser Vorschlag für Ihr Budget. Im nächsten Schritt können Sie ihn noch verändern.",   // PLATZHALTER_ZUFALL_TEXT
     zufallNeuButton: "Neu mischen",                              // PLATZHALTER_ZUFALL_NEU_BUTTON
     zufallWeiterButton: "Weiter zur individuellen Anpassung",    // PLATZHALTER_ZUFALL_WEITER_BUTTON
-    zufallKeinErgebnis: "Für dieses Budget konnten wir leider keinen Korb mit mindestens drei Produkten zusammenstellen. Bitte wählen Sie ein höheres Budget oder stellen Sie Ihren Korb individuell zusammen.",   // PLATZHALTER_ZUFALL_KEIN_ERGEBNIS
+    zufallKeinErgebnis: "Für dieses Budget konnten wir leider keinen Korb mit mindestens drei Produkten zusammenstellen. Stellen Sie Ihren Korb gerne individuell zusammen.",   // PLATZHALTER_ZUFALL_KEIN_ERGEBNIS
+    zufallBestellenButton: "Jetzt bestellen",                    // PLATZHALTER_ZUFALL_BESTELLEN_BUTTON
     // Hinweistexte im letzten Schritt
     abholHinweis: "Mit dem Absenden wird Ihr Geschenkkorb von unseren Mitarbeiterinnen hergerichtet. In der Regel steht er am nächsten Werktag zur Abholung bereit. Zusätzlich erhalten Sie eine Bestätigung per E-Mail.",   // PLATZHALTER_ABHOLHINWEIS
     alkoholHinweis: "Alkoholische Getränke werden nur nach den Vorgaben des Jugendschutzgesetzes abgegeben (Spirituosen ab 18 Jahren).",   // PLATZHALTER_ALKOHOLHINWEIS
@@ -777,17 +779,24 @@ function viewZufallErgebnis(){
   if(!zufall.ergebnis){
     sec.append(
       h('p', { class: 'lead' }, T.zufallKeinErgebnis),
-      h('div', { class: 'blaettern' },
-        h('a', { class: 'knopf sekundaer', href: '#budget' }, 'Anderes Budget wählen'),
-        h('a', { class: 'knopf primaer', href: '#kategorie-1' }, T.wahlIndividuellButton)));
+      h('p', null, h('a', { class: 'knopf primaer', href: '#kategorie-1' }, T.wahlIndividuellButton)));
     return sec;
   }
 
   const proKat = K.map(() => []);
   zufall.ergebnis.items.forEach(({ p, ki }) => proKat[ki].push(p));
 
+  const bild = h('div', { class: 'zufall-bild', html: korbSvg('zufall-' + Math.random().toString(36).slice(2, 7)) });
+  const anteil = Math.min(zufall.ergebnis.summe / GRENZE_CENT(), 1);
+  bild.querySelector('.korb-gruppe').style.setProperty('--s', (0.66 + 0.42 * anteil).toFixed(3));
+  bild.querySelectorAll('.slot').forEach(s => {
+    const menge = proKat[+s.dataset.kat].length;
+    s.classList.toggle('an', menge > +s.dataset.nr);
+  });
+
   sec.append(
     h('p', { class: 'lead' }, T.zufallText),
+    bild,
     h('div', { class: 'ergebnis' },
       h('div', null, h('span', { class: 'gl' }, 'Budget'), h('span', { class: 'gross' }, tier.label)),
       h('div', null, h('span', { class: 'gl' }, 'Ausgewählte Artikel'), h('span', { class: 'gross' }, String(zufall.ergebnis.items.length))),
@@ -804,7 +813,8 @@ function viewZufallErgebnis(){
     h('div', { class: 'blaettern' },
       h('a', { class: 'knopf sekundaer', href: '#budget' }, 'Anderes Budget wählen'),
       h('button', { type: 'button', class: 'knopf sekundaer', onclick: () => { zustand.zufall = { tierIndex: zufall.tierIndex, ergebnis: zufallskorbErzeugen(zufall.tierIndex) }; route(false); } }, T.zufallNeuButton),
-      h('a', { class: 'knopf primaer', href: '#kategorie-1', onclick: zufallKorbUebernehmen }, T.zufallWeiterButton)));
+      h('a', { class: 'knopf sekundaer', href: '#kategorie-1', onclick: zufallKorbUebernehmen }, T.zufallWeiterButton),
+      h('a', { class: 'knopf primaer', href: '#abschluss', onclick: zufallKorbUebernehmen }, T.zufallBestellenButton)));
   return sec;
 }
 
